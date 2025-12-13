@@ -2,10 +2,9 @@ import os
 from pathlib import Path
 
 # =========================
-# BASE DIR
+# BASE DIRECTORY
 # =========================
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # =========================
 # SECURITY
@@ -23,27 +22,25 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
 ]
 
-
 # =========================
 # APPLICATIONS
 # =========================
 INSTALLED_APPS = [
+    # Django default apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-
     "django.contrib.humanize",
 
-    # Third-party
+    # Third-party apps
     "corsheaders",
 
     # Local apps
     "BooklandBackend.booklandapp",
 ]
-
 
 # =========================
 # MIDDLEWARE
@@ -52,7 +49,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
-    # ✅ CORS MUST COME BEFORE CommonMiddleware
+    # CORS must be before CommonMiddleware
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 
@@ -63,13 +60,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-
 # =========================
 # URLS & WSGI
 # =========================
 ROOT_URLCONF = "BooklandSchools.urls"
 WSGI_APPLICATION = "BooklandSchools.wsgi.application"
-
 
 # =========================
 # TEMPLATES
@@ -77,7 +72,7 @@ WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "BooklandFrontend" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -90,9 +85,8 @@ TEMPLATES = [
     },
 ]
 
-
 # =========================
-# DATABASE (RENDER FREE TIER SAFE)
+# DATABASE
 # =========================
 DATABASES = {
     "default": {
@@ -100,7 +94,6 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-
 
 # =========================
 # PASSWORD VALIDATION
@@ -112,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
 # =========================
 # INTERNATIONALIZATION
 # =========================
@@ -121,37 +113,32 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-
 # =========================
-# STATIC FILES (RENDER OPTIMIZED)
+# STATIC FILES
 # =========================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
-
+STATICFILES_DIRS = [
+    BASE_DIR / "BooklandFrontend" / "static",
+]
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =========================
-# MEDIA FILES (API IMAGES)
+# MEDIA FILES
 # =========================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-
 
 # =========================
 # DEFAULT PRIMARY KEY
 # =========================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 # =========================
-# CORS SETTINGS (API ACCESS)
+# CORS SETTINGS
 # =========================
-CORS_ALLOW_ALL_ORIGINS = True  # ✅ SAFE FOR NOW
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOW_HEADERS = [
     "accept",
     "authorization",
@@ -161,9 +148,8 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-
 # =========================
-# CSRF (IMPORTANT FOR API)
+# CSRF TRUSTED ORIGINS
 # =========================
 CSRF_TRUSTED_ORIGINS = [
     "https://booklandbackend.onrender.com",

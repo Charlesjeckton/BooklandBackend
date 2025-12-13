@@ -14,12 +14,13 @@ SECRET_KEY = os.getenv(
     "django-insecure-change-this-in-render"
 )
 
-DEBUG = False
+# ✅ DEBUG ON FOR LOCALHOST
+DEBUG = True
 
 ALLOWED_HOSTS = [
-    ".onrender.com",
-    "localhost",
     "127.0.0.1",
+    "localhost",
+    ".onrender.com",
 ]
 
 # =========================
@@ -39,7 +40,7 @@ INSTALLED_APPS = [
     "corsheaders",
 
     # Local apps
-    "BooklandBackend.booklandapp",
+    "booklandapp",
 ]
 
 # =========================
@@ -49,7 +50,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
-    # CORS must be before CommonMiddleware
+    # CORS must come before CommonMiddleware
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 
@@ -72,7 +73,9 @@ WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "BooklandFrontend" / "templates"],
+        "DIRS": [
+            BASE_DIR.parent / "BooklandFrontend" / "templates",  # ✅ Correct path
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -117,10 +120,12 @@ USE_TZ = True
 # STATIC FILES
 # =========================
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_DIRS = [
-    BASE_DIR / "BooklandFrontend" / "static",
+    BASE_DIR.parent / "BooklandFrontend" / "static",  # ✅ Correct path
 ]
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =========================
@@ -152,5 +157,6 @@ CORS_ALLOW_HEADERS = [
 # CSRF TRUSTED ORIGINS
 # =========================
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
     "https://booklandbackend.onrender.com",
 ]

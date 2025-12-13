@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class BooklandappConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'BooklandBackend.booklandapp'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "booklandapp"

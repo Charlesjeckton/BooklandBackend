@@ -1,8 +1,17 @@
 from django.contrib import admin
 
-from BooklandBackend.booklandapp.models import AdmissionMessage, EnquiryMessages, AlumniMessage, LeadershipMessage
-from BooklandBackend.booklandapp.models import TestimonialsMessage, FeeStructure, Event, FeaturedEvent, GalleryImage
-from BooklandBackend.booklandapp.models import KeyAdmissionDeadline
+from .models import (
+    AdmissionMessage,
+    EnquiryMessages,
+    AlumniMessage,
+    LeadershipMessage,
+    TestimonialsMessage,
+    FeeStructure,
+    Event,
+    FeaturedEvent,
+    GalleryImage,
+    KeyAdmissionDeadline,
+)
 
 # Register your models here.
 admin.site.register(AdmissionMessage)

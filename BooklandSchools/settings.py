@@ -4,11 +4,10 @@ from pathlib import Path
 # =========================
 # BASE DIRECTORIES
 # =========================
-# BASE_DIR points to BooklandBackend folder
+# BooklandSchools/settings.py -> BASE_DIR = BooklandSchools
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-# FRONTEND_DIR points to BooklandFrontend folder, works locally and on Render
-FRONTEND_DIR = (BASE_DIR / "../BooklandFrontend").resolve()
+PROJECT_ROOT = BASE_DIR.parent  # Points to BooklandBackend folder
+FRONTEND_DIR = PROJECT_ROOT.parent / "BooklandFrontend"  # Points to BooklandFrontend folder
 
 # =========================
 # SECURITY
@@ -18,8 +17,7 @@ SECRET_KEY = os.getenv(
     "django-insecure-change-this-in-render"
 )
 
-# DEBUG on locally, off in production
-DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -53,11 +51,8 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-
-    # CORS must come before CommonMiddleware
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -77,7 +72,7 @@ WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [FRONTEND_DIR / "templates"],  # Always find frontend templates
+        "DIRS": [FRONTEND_DIR.resolve() / "templates"],  # frontend templates
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -122,14 +117,8 @@ USE_TZ = True
 # STATIC FILES
 # =========================
 STATIC_URL = "/static/"
-
-# Collect static files from frontend folder
-STATICFILES_DIRS = [FRONTEND_DIR / "static"]
-
-# Where collectstatic will place files for production
+STATICFILES_DIRS = [FRONTEND_DIR.resolve() / "static"]  # frontend static
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-# WhiteNoise for static files on Render
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =========================
@@ -144,7 +133,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =========================
-# CORS SETTINGS
+# CORS
 # =========================
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
@@ -164,13 +153,3 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://booklandbackend.onrender.com",
 ]
-
-# =========================
-# DEBUG TIP
-# =========================
-# Ensure templates exist at:
-# - local dev: <project_root>/BooklandFrontend/templates/index.html
-# - Render: /opt/render/project/src/BooklandFrontend/templates/index.html
-# Static files:
-# - local dev: <project_root>/BooklandFrontend/static/
-# - Render: collected into /opt/render/project/src/staticfiles after `collectstatic`

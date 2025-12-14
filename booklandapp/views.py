@@ -16,6 +16,9 @@ from .models import (
     KeyAdmissionDeadline,
 )
 
+from pathlib import Path
+print("Templates path:", Path(__file__).resolve().parent.parent.parent / "BooklandFrontend" / "templates")
+
 
 # =====================================================
 # API VIEWS (JSON RESPONSES)

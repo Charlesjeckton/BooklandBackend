@@ -18,4 +18,6 @@ urlpatterns = [
     path('api/leadership/', views.api_leadership, name='api_leadership'),
     path('api/gallery/', views.api_gallery, name='api_gallery'),
     path('api/fees/', views.api_fees, name='api_fees'),
+    path('api/alumni/', views.api_alumni, name='api_alumni'),
+    path('api/featured-events/', views.api_featured_events, name='api_featured_events'),
 ]

@@ -2,20 +2,17 @@ import os
 from pathlib import Path
 
 # =========================
-# BASE DIRECTORY
+# BASE DIRECTORIES
 # =========================
-BASE_DIR = Path(__file__).resolve().parent.parent  # BooklandBackend folder
-FRONTEND_DIR = BASE_DIR / ".." / "BooklandFrontend"  # BooklandFrontend folder
+BASE_DIR = Path(__file__).resolve().parent.parent  # BooklandBackend
+PROJECT_ROOT = BASE_DIR.parent  # src folder containing BooklandBackend & BooklandFrontend
+FRONTEND_DIR = PROJECT_ROOT / "BooklandFrontend"
 
 # =========================
 # SECURITY
 # =========================
-SECRET_KEY = os.getenv(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-change-this-in-render"
-)
-
-DEBUG = True
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "django-insecure-change-this-in-render")
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -50,7 +47,6 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 
-    # CORS must come before CommonMiddleware
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 
@@ -73,9 +69,7 @@ WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            (FRONTEND_DIR / "templates").resolve(),  # Absolute path to templates
-        ],
+        "DIRS": [ (FRONTEND_DIR / "templates").resolve() ],  # Absolute path for Render
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -120,9 +114,7 @@ USE_TZ = True
 # STATIC FILES
 # =========================
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [
-    (FRONTEND_DIR / "static").resolve(),  # Absolute path to frontend static
-]
+STATICFILES_DIRS = [ (FRONTEND_DIR / "static").resolve() ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

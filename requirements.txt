@@ -1,0 +1,5 @@
+Django~=5.2.3
+gunicorn
+whitenoise
+python-dotenv
+django-cors-headers

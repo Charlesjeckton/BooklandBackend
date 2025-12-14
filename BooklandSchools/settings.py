@@ -4,7 +4,8 @@ from pathlib import Path
 # =========================
 # BASE DIRECTORY
 # =========================
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent  # BooklandBackend
+FRONTEND_DIR = BASE_DIR.parent / "BooklandFrontend"  # BooklandFrontend folder
 
 # =========================
 # SECURITY
@@ -14,7 +15,6 @@ SECRET_KEY = os.getenv(
     "django-insecure-change-this-in-render"
 )
 
-# ✅ DEBUG ON FOR LOCALHOST
 DEBUG = True
 
 ALLOWED_HOSTS = [
@@ -74,7 +74,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
-            BASE_DIR.parent / "BooklandFrontend" / "templates",  # ✅ Correct path
+            FRONTEND_DIR / "templates",  # Templates from frontend folder
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -120,11 +120,9 @@ USE_TZ = True
 # STATIC FILES
 # =========================
 STATIC_URL = "/static/"
-
 STATICFILES_DIRS = [
-    BASE_DIR.parent / "BooklandFrontend" / "static",  # ✅ Correct path
+    FRONTEND_DIR / "static",  # Static files from frontend folder
 ]
-
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

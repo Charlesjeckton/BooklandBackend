@@ -6,7 +6,6 @@ from django.conf.urls.static import static
 urlpatterns = [
     path("admin/", admin.site.urls),
 
-    # ✅ CORRECT app include
     path("", include("booklandapp.urls")),
 ]
 

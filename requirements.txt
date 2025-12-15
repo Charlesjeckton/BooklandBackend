@@ -1,5 +1,8 @@
 Django~=5.2.3
+djangorestframework
+django-cors-headers
 gunicorn
 whitenoise
 python-dotenv
-django-cors-headers
+Pillow
+psycopg[binary]

@@ -1,23 +1,39 @@
 from django.urls import path
-from . import views
+from .views import (
+    api_home,
+    api_testimonials,
+    api_leadership,
+    api_gallery,
+    api_fees,
+    api_events,
+    api_featured_events,
+    api_alumni,
+    api_admission_deadlines,
+    api_admissions,
+    api_contact,
+)
 
 urlpatterns = [
-    # Template pages
-    path('', views.index, name='index'),
-    path('about/', views.about, name='about'),
-    path('admissions/', views.admissions, name='admissions'),
-    path('alumni/', views.alumni, name='alumni'),
-    path('contact/', views.contact, name='contact'),
-    path('events/', views.events, name='events'),
-    path('faqs/', views.faqs, name='faqs'),
-    path('fees/', views.fees, name='fees'),
+    # -------------------------------------------------
+    # API ROOT / HEALTH CHECK
+    # -------------------------------------------------
+    path("api/", api_home, name="api_home"),
 
-    # API endpoints
-    path('api/testimonials/', views.api_testimonials, name='api_testimonials'),
-    path('api/events/', views.api_events, name='api_events'),
-    path('api/leadership/', views.api_leadership, name='api_leadership'),
-    path('api/gallery/', views.api_gallery, name='api_gallery'),
-    path('api/fees/', views.api_fees, name='api_fees'),
-    path('api/alumni/', views.api_alumni, name='api_alumni'),
-    path('api/featured-events/', views.api_featured_events, name='api_featured_events'),
+    # -------------------------------------------------
+    # READ APIs (GET)
+    # -------------------------------------------------
+    path("api/testimonials/", api_testimonials, name="api_testimonials"),
+    path("api/leadership/", api_leadership, name="api_leadership"),
+    path("api/gallery/", api_gallery, name="api_gallery"),
+    path("api/fees/", api_fees, name="api_fees"),
+    path("api/events/", api_events, name="api_events"),
+    path("api/featured-events/", api_featured_events, name="api_featured_events"),
+    path("api/alumni/", api_alumni, name="api_alumni"),
+    path("api/admission-deadlines/", api_admission_deadlines, name="api_admission_deadlines"),
+
+    # -------------------------------------------------
+    # WRITE APIs (POST)
+    # -------------------------------------------------
+    path("api/admissions/submit/", api_admissions, name="api_admissions"),
+    path("api/contact/submit/", api_contact, name="api_contact"),
 ]

@@ -1,23 +1,16 @@
 import os
 from pathlib import Path
 
-# =========================
-# BASE DIRECTORIES
-# =========================
-# BooklandSchools/settings.py -> BASE_DIR = BooklandSchools
+# =====================================================
+# BASE DIRECTORY
+# =====================================================
 BASE_DIR = Path(__file__).resolve().parent.parent
-PROJECT_ROOT = BASE_DIR.parent  # Points to BooklandBackend folder
-FRONTEND_DIR = PROJECT_ROOT.parent / "BooklandFrontend"  # Points to BooklandFrontend folder
 
-# =========================
+# =====================================================
 # SECURITY
-# =========================
-SECRET_KEY = os.getenv(
-    "DJANGO_SECRET_KEY",
-    "django-insecure-change-this-in-render"
-)
-
-DEBUG = os.getenv("DEBUG", "True") == "True"
+# =====================================================
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
@@ -25,54 +18,55 @@ ALLOWED_HOSTS = [
     ".onrender.com",
 ]
 
-# =========================
-# INSTALLED APPS
-# =========================
+# =====================================================
+# APPLICATIONS
+# =====================================================
 INSTALLED_APPS = [
-    # Django default apps
+    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.humanize",
 
-    # Third-party apps
+    # Third-party
     "corsheaders",
+    "rest_framework",
 
-    # Local apps
+    # Local
     "booklandapp",
 ]
 
-# =========================
+# =====================================================
 # MIDDLEWARE
-# =========================
+# =====================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "django.middleware.common.CommonMiddleware",
+
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# =========================
-# URLS & WSGI
-# =========================
+# =====================================================
+# URLS / WSGI
+# =====================================================
 ROOT_URLCONF = "BooklandSchools.urls"
 WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 
-# =========================
-# TEMPLATES
-# =========================
+# =====================================================
+# TEMPLATES (API only — frontend is separate)
+# =====================================================
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [FRONTEND_DIR.resolve() / "templates"],  # frontend templates
+        "DIRS": [],  # No templates rendered from backend
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -85,9 +79,9 @@ TEMPLATES = [
     },
 ]
 
-# =========================
+# =====================================================
 # DATABASE
-# =========================
+# =====================================================
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -95,9 +89,9 @@ DATABASES = {
     }
 }
 
-# =========================
+# =====================================================
 # PASSWORD VALIDATION
-# =========================
+# =====================================================
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -105,37 +99,41 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# =========================
+# =====================================================
 # INTERNATIONALIZATION
-# =========================
+# =====================================================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# =========================
-# STATIC FILES
-# =========================
+# =====================================================
+# STATIC FILES (Admin + Whitenoise)
+# =====================================================
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [FRONTEND_DIR.resolve() / "static"]  # frontend static
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# =========================
+# =====================================================
 # MEDIA FILES
-# =========================
+# =====================================================
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-# =========================
+# =====================================================
 # DEFAULT PRIMARY KEY
-# =========================
+# =====================================================
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# =========================
-# CORS
-# =========================
-CORS_ALLOW_ALL_ORIGINS = True
+# =====================================================
+# CORS CONFIGURATION (allow your Vercel frontend)
+# =====================================================
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "https://your-frontend.vercel.app",  # <-- replace with your actual frontend URL
+]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     "accept",
@@ -146,9 +144,9 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-# =========================
-# CSRF TRUSTED ORIGINS
-# =========================
+# =====================================================
+# CSRF TRUSTED ORIGINS (for production)
+# =====================================================
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://booklandbackend.onrender.com",

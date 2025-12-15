@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 # =====================================================
 # LOAD ENVIRONMENT VARIABLES
 # =====================================================
-# Load .env file if it exists
 load_dotenv()
 
 # =====================================================
@@ -18,13 +17,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # =====================================================
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key-fallback")
-DEBUG = os.getenv("DEBUG", "False").lower() == "true"
+DEBUG = os.getenv("DEBUG", "True").lower() == "true"
 
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     "booklandbackend.onrender.com",
-    ".onrender.com",
 ]
 
 # =====================================================
@@ -57,7 +55,10 @@ MIDDLEWARE = [
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+
+    # KEEP CSRF → required for Django admin
     "django.middleware.csrf.CsrfViewMiddleware",
+
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -70,7 +71,7 @@ ROOT_URLCONF = "BooklandSchools.urls"
 WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 
 # =====================================================
-# TEMPLATES
+# TEMPLATES (ADMIN SAFE)
 # =====================================================
 TEMPLATES = [
     {
@@ -89,16 +90,13 @@ TEMPLATES = [
 ]
 
 # =====================================================
-# DATABASE CONFIGURATION
+# DATABASE (SAFE FOR TESTING + RENDER)
 # =====================================================
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv(
-            "DATABASE_URL",
-            "postgresql://bookland_db_user:UcwBpvkFRekEdLfk2ReS4W2n6xRty11M@dpg-d502l9pr0fns73a05fsg-a.oregon-postgres.render.com/bookland_db"
-        ),
+        default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
-        ssl_require=True
+        ssl_require=True,
     )
 }
 
@@ -120,7 +118,7 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# STATIC & MEDIA FILES
+# STATIC & MEDIA FILES (ADMIN SAFE)
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -130,7 +128,7 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # =====================================================
-# CORS
+# CORS (VERCEL + LOCAL)
 # =====================================================
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
@@ -138,13 +136,24 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://bookland-frontend-two.vercel.app",
 ]
-CORS_ALLOW_CREDENTIALS = True
+
+# Do NOT enable credentials unless using cookies
+CORS_ALLOW_CREDENTIALS = False
 
 # =====================================================
-# CSRF TRUSTED ORIGINS
+# CSRF TRUSTED ORIGINS (ADMIN + API SAFE)
 # =====================================================
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://booklandbackend.onrender.com",
     "https://bookland-frontend-two.vercel.app",
 ]
+
+# =====================================================
+# DJANGO REST FRAMEWORK (TESTING FRIENDLY)
+# =====================================================
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+}

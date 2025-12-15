@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-import dj_database_url  # Requires: pip install dj-database-url
+import dj_database_url
 
 # =====================================================
 # BASE DIRECTORY
@@ -8,21 +8,17 @@ import dj_database_url  # Requires: pip install dj-database-url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # =====================================================
-# ENVIRONMENT VARIABLES & SECURITY
+# SECURITY & ENVIRONMENT
 # =====================================================
-# Get SECRET_KEY from environment
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key-fallback")
 
-# Get DEBUG status from environment. Defaults to False for safety.
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-# Define ALL allowed host domains for security
 ALLOWED_HOSTS = [
-    "127.0.0.1",
     "localhost",
-    # Specific production domains:
-    "booklandbackend.onrender.com",  # <-- YOUR CONFIRMED RENDER DOMAIN
-    ".onrender.com",  # Allows subdomains
+    "127.0.0.1",
+    "booklandbackend.onrender.com",
+    ".onrender.com",
 ]
 
 # =====================================================
@@ -38,10 +34,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # Third-party
-    "corsheaders",  # For cross-origin requests from Vercel
     "rest_framework",
+    "corsheaders",
 
-    # Local
+    # Local apps
     "booklandapp",
 ]
 
@@ -50,8 +46,8 @@ INSTALLED_APPS = [
 # =====================================================
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "whitenoise.middleware.WhiteNoiseMiddleware",  # For static files (must be near top)
-    "corsheaders.middleware.CorsMiddleware",      # For Vercel communication (must be very high)
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -62,13 +58,13 @@ MIDDLEWARE = [
 ]
 
 # =====================================================
-# URLS / WSGI
+# URLS & WSGI
 # =====================================================
 ROOT_URLCONF = "BooklandSchools.urls"
 WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 
 # =====================================================
-# TEMPLATES (API only)
+# TEMPLATES (Admin / API only)
 # =====================================================
 TEMPLATES = [
     {
@@ -87,10 +83,8 @@ TEMPLATES = [
 ]
 
 # =====================================================
-# DATABASE (Production-ready configuration)
+# DATABASE CONFIGURATION
 # =====================================================
-
-# Default to SQLite for local development
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -98,14 +92,12 @@ DATABASES = {
     }
 }
 
-# If DATABASE_URL is set (e.g., by Render's PostgreSQL connection), use it.
-DB_FROM_ENV = dj_database_url.config(conn_max_age=600)
-if DB_FROM_ENV:
-    DATABASES["default"].update(DB_FROM_ENV)
-
+DATABASE_URL = dj_database_url.config(conn_max_age=600)
+if DATABASE_URL:
+    DATABASES["default"].update(DATABASE_URL)
 
 # =====================================================
-# INTERNATIONALIZATION & PASSWORDS (Unchanged)
+# AUTH / INTERNATIONALIZATION
 # =====================================================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
@@ -118,31 +110,32 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 # =====================================================
-# STATIC & MEDIA FILES (Whitenoise Setup)
+# STATIC & MEDIA FILES (WHITENOISE)
 # =====================================================
 STATIC_URL = "/static/"
-# Directory where static files will be collected for deployment
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-
 # =====================================================
-# CORS CONFIGURATION (Allow Vercel Frontend)
+# CORS CONFIGURATION (VERCEL)
 # =====================================================
 CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://bookland-frontend-lilac.vercel.app",  # <--- YOUR LIVE VERCEL URL
+    "https://bookland-frontend-lilac.vercel.app",
 ]
-CORS_ALLOW_CREDENTIALS = True
+
 CORS_ALLOW_HEADERS = [
     "accept",
     "authorization",
@@ -152,12 +145,11 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-
 # =====================================================
-# CSRF TRUSTED ORIGINS (For secure POST requests)
+# CSRF CONFIGURATION
 # =====================================================
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
-    "https://booklandbackend.onrender.com",         # <-- YOUR CONFIRMED RENDER DOMAIN
-    "https://bookland-frontend-lilac.vercel.app",  # <--- YOUR LIVE VERCEL URL
+    "https://booklandbackend.onrender.com",
+    "https://bookland-frontend-lilac.vercel.app",
 ]

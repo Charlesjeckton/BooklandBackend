@@ -5,4 +5,5 @@ gunicorn
 whitenoise
 python-dotenv
 Pillow
-psycopg[binary]
+psycopg2-binary
+dj-database-url

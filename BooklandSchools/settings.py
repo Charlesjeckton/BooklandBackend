@@ -1,6 +1,13 @@
 import os
 from pathlib import Path
-import dj_database_url  # pip install dj-database-url
+import dj_database_url
+from dotenv import load_dotenv
+
+# =====================================================
+# LOAD ENVIRONMENT VARIABLES
+# =====================================================
+# Load .env file if it exists
+load_dotenv()
 
 # =====================================================
 # BASE DIRECTORY
@@ -8,7 +15,7 @@ import dj_database_url  # pip install dj-database-url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # =====================================================
-# ENVIRONMENT VARIABLES & SECURITY
+# SECURITY
 # =====================================================
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key-fallback")
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
@@ -86,7 +93,10 @@ TEMPLATES = [
 # =====================================================
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgresql://bookland_db_user:UcwBpvkFRekEdLfk2ReS4W2n6xRty11M@dpg-d502l9pr0fns73a05fsg-a.oregon-postgres.render.com/bookland_db",
+        default=os.getenv(
+            "DATABASE_URL",
+            "postgresql://bookland_db_user:UcwBpvkFRekEdLfk2ReS4W2n6xRty11M@dpg-d502l9pr0fns73a05fsg-a.oregon-postgres.render.com/bookland_db"
+        ),
         conn_max_age=600,
         ssl_require=True
     )

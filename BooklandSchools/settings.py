@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-import dj_database_url
+import dj_database_url  # pip install dj-database-url
 
 # =====================================================
 # BASE DIRECTORY
@@ -8,15 +8,14 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # =====================================================
-# SECURITY & ENVIRONMENT
+# ENVIRONMENT VARIABLES & SECURITY
 # =====================================================
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key-fallback")
-
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 ALLOWED_HOSTS = [
-    "localhost",
     "127.0.0.1",
+    "localhost",
     "booklandbackend.onrender.com",
     ".onrender.com",
 ]
@@ -34,8 +33,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
 
     # Third-party
-    "rest_framework",
     "corsheaders",
+    "rest_framework",
 
     # Local apps
     "booklandapp",
@@ -58,13 +57,13 @@ MIDDLEWARE = [
 ]
 
 # =====================================================
-# URLS & WSGI
+# URLS / WSGI
 # =====================================================
 ROOT_URLCONF = "BooklandSchools.urls"
 WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 
 # =====================================================
-# TEMPLATES (Admin / API only)
+# TEMPLATES
 # =====================================================
 TEMPLATES = [
     {
@@ -86,18 +85,15 @@ TEMPLATES = [
 # DATABASE CONFIGURATION
 # =====================================================
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+    "default": dj_database_url.config(
+        default="postgresql://bookland_db_user:UcwBpvkFRekEdLfk2ReS4W2n6xRty11M@dpg-d502l9pr0fns73a05fsg-a.oregon-postgres.render.com/bookland_db",
+        conn_max_age=600,
+        ssl_require=True
+    )
 }
 
-DATABASE_URL = dj_database_url.config(conn_max_age=600)
-if DATABASE_URL:
-    DATABASES["default"].update(DATABASE_URL)
-
 # =====================================================
-# AUTH / INTERNATIONALIZATION
+# INTERNATIONALIZATION & PASSWORDS
 # =====================================================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
@@ -114,42 +110,31 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# STATIC & MEDIA FILES (WHITENOISE)
+# STATIC & MEDIA FILES
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # =====================================================
-# CORS CONFIGURATION (VERCEL)
+# CORS
 # =====================================================
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOW_CREDENTIALS = True
-
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://bookland-frontend-lilac.vercel.app",
+    "https://bookland-frontend-two.vercel.app",
 ]
-
-CORS_ALLOW_HEADERS = [
-    "accept",
-    "authorization",
-    "content-type",
-    "origin",
-    "x-csrftoken",
-    "x-requested-with",
-]
+CORS_ALLOW_CREDENTIALS = True
 
 # =====================================================
-# CSRF CONFIGURATION
+# CSRF TRUSTED ORIGINS
 # =====================================================
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
     "https://booklandbackend.onrender.com",
-    "https://bookland-frontend-lilac.vercel.app",
+    "https://bookland-frontend-two.vercel.app",
 ]

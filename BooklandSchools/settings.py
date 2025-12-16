@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
-import cloudinary
 
 # =====================================================
 # LOAD ENVIRONMENT VARIABLES
@@ -27,26 +26,25 @@ ALLOWED_HOSTS = [
     "booklandbackend.onrender.com",
     "127.0.0.1",
     "localhost",
+    ".onrender.com",
 ]
 
-# Security headers
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-X_FRAME_OPTIONS = "DENY"
-SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-
-# SSL/HTTPS settings (Render provides HTTPS)
+# Security headers - ONLY in production
 if not DEBUG:
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
 
 # =====================================================
-# APPLICATIONS
+# APPLICATIONS - FIXED ORDER
 # =====================================================
 INSTALLED_APPS = [
     # Django core
@@ -57,12 +55,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third-party
+    # Third-party - CRITICAL: cloudinary_storage BEFORE cloudinary
+    "cloudinary_storage",  # MUST BE FIRST
+    "cloudinary",  # MUST BE SECOND
     "corsheaders",
     "rest_framework",
-    "cloudinary",
-    "cloudinary_storage",
-    "whitenoise.runserver_nostatic",
 
     # Local apps
     "booklandapp",
@@ -95,7 +92,7 @@ WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -103,9 +100,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-            ],
-            'builtins': [
-                'django.templatetags.static',
             ],
         },
     },
@@ -123,132 +117,94 @@ DATABASES = {
         default=DATABASE_URL,
         conn_max_age=600,
         ssl_require=True,
-        engine='django.db.backends.postgresql',
     )
-}
-
-# Database connection health checks
-DATABASES['default']['CONN_HEALTH_CHECKS'] = True
-DATABASES['default']['CONN_MAX_AGE'] = 600
-
-# =====================================================
-# CACHING (for Render performance)
-# =====================================================
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 300,  # 5 minutes
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000
-        }
-    }
 }
 
 # =====================================================
 # INTERNATIONALIZATION & PASSWORDS
 # =====================================================
 LANGUAGE_CODE = "en-us"
-TIME_ZONE = "Africa/Nairobi"  # Changed to Kenya timezone
+TIME_ZONE = "Africa/Nairobi"
 USE_I18N = True
 USE_TZ = True
 
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-        "OPTIONS": {
-            "max_similarity": 0.7,
-        }
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
         "OPTIONS": {
-            "min_length": 10,
+            "min_length": 8,
         }
     },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Password hashers (prioritize stronger ones)
+# Password hashers - IMPORTANT: Add BCrypt fallback
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.BCryptPasswordHasher',  # Added fallback
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# STATIC FILES (WHITENOISE)
+# STATIC FILES
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
 
-# WhiteNoise configuration
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-WHITENOISE_MANIFEST_STRICT = False
-WHITENOISE_MAX_AGE = 31536000  # 1 year cache for static files
-WHITENOISE_USE_FINDERS = True
 
 # =====================================================
-# CLOUDINARY MEDIA
+# CLOUDINARY MEDIA - FIXED IMPORT
 # =====================================================
-CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
-CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
-CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
+# IMPORTANT: Move cloudinary import here, after INSTALLED_APPS
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY", "")
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 
-if not all([CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET]):
-    raise ValueError("Cloudinary credentials environment variables are required")
+# Configure Cloudinary only if credentials exist
+if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
+    import cloudinary
+    import cloudinary.uploader
+    import cloudinary.api
 
-cloudinary.config(
-    cloud_name=CLOUDINARY_CLOUD_NAME,
-    api_key=CLOUDINARY_API_KEY,
-    api_secret=CLOUDINARY_API_SECRET,
-    secure=True
-)
-
-DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
-    'API_KEY': CLOUDINARY_API_KEY,
-    'API_SECRET': CLOUDINARY_API_SECRET,
-    'SECURE': True,
-}
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True
+    )
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # =====================================================
-# CORS (PRODUCTION)
+# CORS - PRODUCTION READY
 # =====================================================
 CORS_ALLOW_ALL_ORIGINS = False
 
-# Add your Vercel frontend domain here
 CORS_ALLOWED_ORIGINS = [
     "https://bookland-frontend-two.vercel.app",
-    # Add other production domains as needed
 ]
 
 if DEBUG:
     CORS_ALLOWED_ORIGINS.extend([
         "http://localhost:3000",
-        "http://localhost:5173",
         "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ])
 
-CORS_ALLOW_CREDENTIALS = False
-CORS_ALLOW_METHODS = [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-]
 CORS_ALLOW_HEADERS = [
     "accept",
     "accept-encoding",
@@ -259,7 +215,20 @@ CORS_ALLOW_HEADERS = [
     "user-agent",
     "x-csrftoken",
     "x-requested-with",
+    "cache-control",
 ]
+
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+CORS_EXPOSE_HEADERS = []
+CORS_ALLOW_CREDENTIALS = False
 
 # =====================================================
 # CSRF TRUSTED ORIGINS
@@ -276,7 +245,7 @@ if DEBUG:
     ])
 
 # =====================================================
-# DJANGO REST FRAMEWORK
+# REST FRAMEWORK
 # =====================================================
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -295,11 +264,10 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/hour",
-        "user": "1000/hour",
+        "anon": "1000/hour",
+        "user": "5000/hour",
     },
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 50,
+    "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
 }
 
 if DEBUG:
@@ -308,74 +276,66 @@ if DEBUG:
     )
 
 # =====================================================
-# LOGGING (PRODUCTION)
+# LOGGING - PRODUCTION
 # =====================================================
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
+            'format': '{asctime} {levelname} {module} {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
             'formatter': 'verbose',
         },
     },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-            'propagate': True,
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
         'booklandapp': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
     },
 }
 
-# Create logs directory if it doesn't exist
-log_dir = BASE_DIR / 'logs'
-log_dir.mkdir(exist_ok=True)
+# =====================================================
+# ADDITIONAL SECURITY
+# =====================================================
+# Email
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' \
+    if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
 
-# =====================================================
-# EMAIL CONFIGURATION (for error reports)
-# =====================================================
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' if not DEBUG else 'django.core.mail.backends.console.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
-EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@booklandschools.com')
-SERVER_EMAIL = os.getenv('SERVER_EMAIL', DEFAULT_FROM_EMAIL)
-
-# =====================================================
-# SECURE COOKIE SETTINGS
-# =====================================================
-SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+# Cookies
+SESSION_COOKIE_AGE = 1209600
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
-
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+# File upload
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
 # =====================================================
-# FILE UPLOAD LIMITS
+# RENDER SPECIFIC
 # =====================================================
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB (Cloudinary limit for free tier)
+# Render health check endpoint (optional)
+RENDER_HEALTH_CHECK_URL = '/health/'
+
+# Ensure static files are collected on Render
+if 'RENDER' in os.environ:
+    # Render-specific settings
+    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')

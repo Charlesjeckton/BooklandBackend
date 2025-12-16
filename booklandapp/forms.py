@@ -6,6 +6,9 @@ from .models import (
     TestimonialsMessage,
     LeadershipMessage,
     AlumniMessage,
+    GalleryImage,
+    FeaturedEvent,
+    FeeStructure,
 )
 
 
@@ -100,6 +103,93 @@ class AlumniMessageForm(forms.ModelForm):
                 fetch_format="auto",
             )
             instance.image = upload_result["secure_url"]
+        if commit:
+            instance.save()
+        return instance
+
+
+# =========================
+# Gallery Image Form
+# =========================
+class GalleryImageForm(forms.ModelForm):
+    upload_image = forms.ImageField(required=True, label="Upload Image")
+
+    class Meta:
+        model = GalleryImage
+        fields = ["title", "upload_image"]
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        image_file = self.cleaned_data.get("upload_image")
+        if image_file:
+            # Upload to Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                image_file,
+                folder="bookland/gallery",
+                quality="auto",
+                fetch_format="auto",
+            )
+            instance.image = upload_result["secure_url"]
+        if commit:
+            instance.save()
+        return instance
+
+
+# =========================
+# Featured Event Form
+# =========================
+class FeaturedEventForm(forms.ModelForm):
+    upload_image = forms.ImageField(required=False, label="Upload Image")
+
+    class Meta:
+        model = FeaturedEvent
+        fields = ["title", "start_date", "end_date", "description", "upload_image"]
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        image_file = self.cleaned_data.get("upload_image")
+        if image_file:
+            # Upload to Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                image_file,
+                folder="bookland/featured_events",
+                quality="auto",
+                fetch_format="auto",
+            )
+            instance.image = upload_result["secure_url"]
+        if commit:
+            instance.save()
+        return instance
+
+
+# =========================
+# Fee Structure Form
+# =========================
+class FeeStructureForm(forms.ModelForm):
+    upload_file = forms.FileField(required=False, label="Upload PDF")
+
+    class Meta:
+        model = FeeStructure
+        fields = [
+            "level",
+            "tuition_per_term",
+            "meals_fee",
+            "transport_fee",
+            "total_fee",
+            "upload_file"
+        ]
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        file_obj = self.cleaned_data.get("upload_file")
+        if file_obj:
+            # Upload PDF to Cloudinary
+            upload_result = cloudinary.uploader.upload(
+                file_obj,
+                folder="bookland/fee_structures",
+                resource_type="raw"  # Important for PDFs
+            )
+            instance.fee_structure_file = upload_result["secure_url"]
         if commit:
             instance.save()
         return instance

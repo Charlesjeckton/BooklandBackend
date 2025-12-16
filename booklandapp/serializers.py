@@ -1,4 +1,7 @@
 from rest_framework import serializers
+from decimal import Decimal
+from cloudinary.utils import cloudinary_url
+
 from .models import (
     AdmissionMessage,
     EnquiryMessages,
@@ -12,10 +15,10 @@ from .models import (
     KeyAdmissionDeadline,
 )
 
+# ==============================
+# READ SERIALIZERS
+# ==============================
 
-# ------------------------------
-# Content serializers (READ)
-# ------------------------------
 class TestimonialsMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestimonialsMessage
@@ -35,15 +38,36 @@ class GalleryImageSerializer(serializers.ModelSerializer):
 
 
 class FeeStructureSerializer(serializers.ModelSerializer):
-    tuition_per_term = serializers.FloatField()
-    meals_fee = serializers.FloatField()
-    transport_fee = serializers.FloatField()
-    total_fee = serializers.FloatField()
-    file = serializers.CharField(source="fee_structure_file")
+    tuition_per_term = serializers.DecimalField(max_digits=12, decimal_places=2)
+    meals_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
+    transport_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
+    total_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
+    file = serializers.SerializerMethodField()
 
     class Meta:
         model = FeeStructure
-        fields = ["id", "level", "tuition_per_term", "meals_fee", "transport_fee", "total_fee", "file"]
+        fields = [
+            "id",
+            "level",
+            "tuition_per_term",
+            "meals_fee",
+            "transport_fee",
+            "total_fee",
+            "file",
+        ]
+
+    def get_file(self, obj):
+        if not obj.fee_structure_file:
+            return None
+
+        url, _ = cloudinary_url(
+            obj.fee_structure_file.public_id,
+            resource_type="raw",
+            sign_url=True,
+            secure=True,
+            expires_at=3600,  # 1 hour
+        )
+        return url
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -52,8 +76,18 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ["id", "title", "category", "month", "day", "year", "start_time", "end_time", "location",
-                  "description"]
+        fields = [
+            "id",
+            "title",
+            "category",
+            "month",
+            "day",
+            "year",
+            "start_time",
+            "end_time",
+            "location",
+            "description",
+        ]
 
     def get_start_time(self, obj):
         return obj.start_time.strftime("%I:%M %p") if obj.start_time else None
@@ -87,16 +121,27 @@ class KeyAdmissionDeadlineSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "deadline_date"]
 
 
-# ------------------------------
-# Form submission serializers (WRITE)
-# ------------------------------
+# ==============================
+# WRITE SERIALIZERS
+# ==============================
+
 class AdmissionMessageSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    phone = serializers.CharField(max_length=20)
+    message = serializers.CharField(max_length=1000)
+
     class Meta:
         model = AdmissionMessage
         fields = ["name", "email", "phone", "message"]
 
 
 class EnquiryMessagesSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    subject = serializers.CharField(max_length=150)
+    message = serializers.CharField(max_length=1000)
+
     class Meta:
         model = EnquiryMessages
         fields = ["name", "email", "subject", "message"]

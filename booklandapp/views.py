@@ -1,6 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from datetime import date
+from cloudinary.utils import cloudinary_url
 
 from .models import (
     AdmissionMessage,
@@ -26,7 +28,7 @@ from .serializers import (
     AdmissionMessageSerializer,
     EnquiryMessagesSerializer,
 )
-from datetime import date
+
 
 # =====================================================
 # General / Health Check
@@ -67,8 +69,28 @@ def api_gallery(request):
 @api_view(["GET"])
 def api_fees(request):
     queryset = FeeStructure.objects.all()
-    serializer = FeeStructureSerializer(queryset, many=True)
-    return Response(serializer.data)
+    data = []
+    for fee in queryset:
+        file_url = None
+        if fee.fee_structure_file:
+            # Generate signed URL for private download
+            file_url, _ = cloudinary_url(
+                fee.fee_structure_file.public_id,
+                resource_type='raw',
+                type='authenticated',  # private download
+                sign_url=True,
+                expires=3600  # 1 hour validity
+            )
+        data.append({
+            "id": fee.id,
+            "level": fee.level,
+            "tuition_per_term": float(fee.tuition_per_term),
+            "meals_fee": float(fee.meals_fee),
+            "transport_fee": float(fee.transport_fee),
+            "total_fee": float(fee.total_fee),
+            "file": file_url
+        })
+    return Response(data)
 
 
 @api_view(["GET"])

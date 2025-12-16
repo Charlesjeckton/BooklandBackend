@@ -26,7 +26,7 @@ def cloudinary_image_preview(obj, field_name):
     url = getattr(obj, field_name)
     if url:
         return format_html(
-            '<img src="{}" width="100" style="object-fit: cover; border-radius: 4px;" />',
+            '<img src="{}" width="100" height="100" style="object-fit: cover; border-radius: 4px;" />',
             url
         )
     return "No Image"

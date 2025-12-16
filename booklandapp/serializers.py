@@ -38,28 +38,18 @@ class GalleryImageSerializer(serializers.ModelSerializer):
 
 
 class FeeStructureSerializer(serializers.ModelSerializer):
-    # Direct public URL for frontend
     fee_file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = FeeStructure
         fields = [
-            "id",
-            "level",
-            "tuition_per_term",
-            "meals_fee",
-            "transport_fee",
-            "total_fee",
-            "fee_file_url",
+            'id', 'level', 'tuition_per_term', 'meals_fee',
+            'transport_fee', 'total_fee', 'fee_file_url'
         ]
 
     def get_fee_file_url(self, obj):
-        """
-        Returns the public URL for the uploaded PDF.
-        """
-        if obj.fee_structure_file:
-            return obj.fee_structure_file.url  # Direct public URL
-        return None
+        # Public URL, no signed URLs needed
+        return obj.fee_structure_file.url if obj.fee_structure_file else None
 
 
 class EventSerializer(serializers.ModelSerializer):

@@ -93,56 +93,22 @@ class FeeStructure(models.Model):
         ("Junior Secondary", "Junior Secondary"),
     ]
 
-    level = models.CharField(
-        max_length=50,
-        choices=LEVEL_CHOICES,
-        unique=True,
-        help_text="Select the school level for this fee structure"
-    )
-
-    tuition_per_term = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Tuition fee per term in KES"
-    )
-
-    meals_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Meals fee per term in KES"
-    )
-
-    transport_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Transport fee per term in KES (optional)"
-    )
-
-    total_fee = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Total approximate fee per term in KES"
-    )
-
-    # CloudinaryField for PDF upload
+    level = models.CharField(max_length=50, choices=LEVEL_CHOICES, unique=True)
+    tuition_per_term = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
+    meals_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
+    transport_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
+    total_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES total")
     fee_structure_file = CloudinaryField(
-        resource_type='raw',  # 'raw' for PDF files
-        folder='fee_structures/',  # Optional folder in Cloudinary
+        resource_type='raw',
+        folder='fee_structures/',
         blank=True,
         null=True,
-        help_text="Upload the fee structure PDF (public or private)"
+        help_text="Upload PDF file (public)"
     )
-
-    created_at = models.DateTimeField(auto_now_add=True)  # Optional: track when record was created
-    updated_at = models.DateTimeField(auto_now=True)  # Optional: track when record was updated
-
-    class Meta:
-        verbose_name = "Fee Structure"
-        verbose_name_plural = "Fee Structures"
-        ordering = ['level']  # Orders by level in admin and queries
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.level} - Total: KES {self.total_fee}"
+        return self.level
 
 
 # =========================

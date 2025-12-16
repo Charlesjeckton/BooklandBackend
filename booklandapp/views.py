@@ -69,15 +69,14 @@ def api_gallery(request):
 # =====================================================
 # Fees API - updated to return fee_file_url (public or signed)
 # =====================================================
-@api_view(["GET"])
+@api_view(['GET'])
 def api_fees(request):
     """
     Returns all fee structures with public PDF URLs.
-    Frontend can directly download PDFs without 401 errors.
     """
-    queryset = FeeStructure.objects.all().order_by('level')
-    serializer = FeeStructureSerializer(queryset, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    fees = FeeStructure.objects.all().order_by('level')
+    serializer = FeeStructureSerializer(fees, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])

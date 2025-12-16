@@ -167,16 +167,10 @@ class FeeStructureForm(forms.ModelForm):
     class Meta:
         model = FeeStructure
         fields = [
-            "level",
-            "tuition_per_term",
-            "meals_fee",
-            "transport_fee",
-            "total_fee",
-            "fee_structure_file",
+            "level", "tuition_per_term", "meals_fee",
+            "transport_fee", "total_fee", "fee_structure_file"
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['fee_structure_file'].help_text = (
-            "Upload PDF file (max 10MB). Files can be set as public or private."
-        )
+        self.fields['fee_structure_file'].help_text = "Upload PDF file (max 10MB). This file will be public."

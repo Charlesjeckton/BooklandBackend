@@ -1,0 +1,6 @@
+INFO 2025-12-16 18:07:42,877 autoreload 16772 20344 Watching for file changes with StatReloader
+INFO 2025-12-16 18:07:49,591 basehttp 16772 18656 "GET / HTTP/1.1" 200 40
+INFO 2025-12-16 18:17:31,303 autoreload 16772 20344 D:\Users\HP\Python Projects\Bookland\BooklandSchools\BooklandBackend\booklandapp\serializers.py changed, reloading.
+INFO 2025-12-16 18:17:32,665 autoreload 24804 24312 Watching for file changes with StatReloader
+INFO 2025-12-16 18:18:33,429 autoreload 24804 24312 D:\Users\HP\Python Projects\Bookland\BooklandSchools\BooklandBackend\booklandapp\serializers.py changed, reloading.
+INFO 2025-12-16 18:18:34,636 autoreload 22624 25956 Watching for file changes with StatReloader

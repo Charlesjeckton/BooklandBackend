@@ -16,10 +16,10 @@ from .models import (
     KeyAdmissionDeadline,
 )
 
+
 # ==============================
 # READ SERIALIZERS
 # ==============================
-
 class TestimonialsMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestimonialsMessage
@@ -38,7 +38,6 @@ class GalleryImageSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "image"]
 
 
-
 class FeeStructureSerializer(serializers.ModelSerializer):
     tuition_per_term = serializers.DecimalField(max_digits=12, decimal_places=2)
     meals_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
@@ -49,29 +48,52 @@ class FeeStructureSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeeStructure
         fields = [
-            "id",
-            "level",
-            "tuition_per_term",
-            "meals_fee",
-            "transport_fee",
-            "total_fee",
-            "file",
+            "id", "level", "tuition_per_term", "meals_fee",
+            "transport_fee", "total_fee", "file"
         ]
 
     def get_file(self, obj):
         if not obj.fee_structure_file:
             return None
 
-        # Generate signed URL with 1-hour expiry
-        url, _ = cloudinary_url(
-            str(obj.fee_structure_file),  # Cloudinary public_id
-            resource_type="raw",
-            type="authenticated",  # Private download
-            sign_url=True,
-            secure=True,
-            expires_at=int(time.time()) + 3600  # 1 hour from now
-        )
-        return url
+        try:
+            # Get ONLY the public_id, not the full URL
+            # For CloudinaryField, use the .public_id attribute
+            public_id = obj.fee_structure_file.public_id
+
+            # If public_id is None or empty, try parsing from the field value
+            if not public_id:
+                # Extract public_id from the stored value
+                field_value = str(obj.fee_structure_file)
+                if '/upload/' in field_value:
+                    # Extract everything after /upload/
+                    parts = field_value.split('/upload/')
+                    if len(parts) > 1:
+                        public_id = parts[1].split('.')[0]  # Remove file extension
+
+            if not public_id:
+                return None
+
+            # Generate proper signed URL
+            url, _ = cloudinary_url(
+                public_id,
+                resource_type="raw",  # For PDF files
+                type="authenticated",  # For private downloads
+                sign_url=True,
+                secure=True,
+                expires_at=int(time.time()) + 3600  # 1 hour expiry
+            )
+
+            return url
+
+        except Exception as e:
+            print(f"Error generating Cloudinary URL: {e}")
+            # Fallback: return direct URL if signed URL fails
+            try:
+                return obj.fee_structure_file.url
+            except:
+                return None
+
 
 class EventSerializer(serializers.ModelSerializer):
     start_time = serializers.SerializerMethodField()

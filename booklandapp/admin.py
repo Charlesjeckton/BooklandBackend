@@ -16,6 +16,9 @@ from .forms import (
     TestimonialsMessageForm,
     LeadershipMessageForm,
     AlumniMessageForm,
+    FeaturedEventForm,
+    GalleryImageForm,
+    FeeStructureForm,
 )
 
 
@@ -30,6 +33,7 @@ def cloudinary_image_preview(obj, field_name):
             url
         )
     return "No Image"
+
 
 cloudinary_image_preview.short_description = "Preview"
 
@@ -78,6 +82,7 @@ class AlumniMessageAdmin(admin.ModelAdmin):
 # =====================================================
 @admin.register(GalleryImage)
 class GalleryImageAdmin(admin.ModelAdmin):
+    form = GalleryImageForm
     list_display = ("title", "image_preview")
     readonly_fields = ("image_preview",)
 
@@ -90,6 +95,7 @@ class GalleryImageAdmin(admin.ModelAdmin):
 # =====================================================
 @admin.register(FeaturedEvent)
 class FeaturedEventAdmin(admin.ModelAdmin):
+    form = FeaturedEventForm
     list_display = ("title", "start_date", "end_date", "image_preview")
     readonly_fields = ("image_preview",)
 
@@ -98,10 +104,26 @@ class FeaturedEventAdmin(admin.ModelAdmin):
 
 
 # =====================================================
-# Other models (no images, standard registration)
+# Fee Structure Admin (with PDF upload)
+# =====================================================
+@admin.register(FeeStructure)
+class FeeStructureAdmin(admin.ModelAdmin):
+    form = FeeStructureForm
+    list_display = ("level", "tuition_per_term", "meals_fee", "transport_fee", "total_fee", "file_link")
+    readonly_fields = ("file_link",)
+
+    def file_link(self, obj):
+        if obj.fee_structure_file:
+            return format_html('<a href="{}" target="_blank">View PDF</a>', obj.fee_structure_file)
+        return "No PDF"
+
+    file_link.short_description = "Fee Structure PDF"
+
+
+# =====================================================
+# Standard models (no images or PDFs, default admin)
 # =====================================================
 admin.site.register(AdmissionMessage)
 admin.site.register(EnquiryMessages)
-admin.site.register(FeeStructure)
 admin.site.register(Event)
 admin.site.register(KeyAdmissionDeadline)

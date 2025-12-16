@@ -1,5 +1,3 @@
-from datetime import date
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,10 +14,22 @@ from .models import (
     FeaturedEvent,
     KeyAdmissionDeadline,
 )
-
+from .serializers import (
+    TestimonialsMessageSerializer,
+    LeadershipMessageSerializer,
+    GalleryImageSerializer,
+    FeeStructureSerializer,
+    EventSerializer,
+    FeaturedEventSerializer,
+    AlumniMessageSerializer,
+    KeyAdmissionDeadlineSerializer,
+    AdmissionMessageSerializer,
+    EnquiryMessagesSerializer,
+)
+from datetime import date
 
 # =====================================================
-# GENERAL / HEALTH CHECK
+# General / Health Check
 # =====================================================
 @api_view(["GET"])
 def api_home(request):
@@ -31,183 +41,87 @@ def api_home(request):
 
 
 # =====================================================
-# CONTENT APIs (READ)
+# Read-only APIs
 # =====================================================
 @api_view(["GET"])
 def api_testimonials(request):
-    data = [
-        {
-            "id": t.id,
-            "name": t.name,
-            "title": t.title,
-            "testimonial": t.testimonial,
-            "image": t.image,  # direct URL
-        }
-        for t in TestimonialsMessage.objects.all()
-    ]
-    return Response(data)
+    queryset = TestimonialsMessage.objects.all()
+    serializer = TestimonialsMessageSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def api_leadership(request):
-    data = [
-        {
-            "id": l.id,
-            "salutation": l.salutation,
-            "name": l.name,
-            "designation": l.designation,
-            "message": l.message,
-            "image": l.image,  # direct URL
-        }
-        for l in LeadershipMessage.objects.all()
-    ]
-    return Response(data)
+    queryset = LeadershipMessage.objects.all()
+    serializer = LeadershipMessageSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def api_gallery(request):
-    data = [
-        {
-            "id": g.id,
-            "title": g.title,
-            "image": g.image,  # direct URL
-        }
-        for g in GalleryImage.objects.all()
-    ]
-    return Response(data)
+    queryset = GalleryImage.objects.all()
+    serializer = GalleryImageSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def api_fees(request):
-    data = [
-        {
-            "id": f.id,
-            "level": f.level,
-            "tuition_per_term": float(f.tuition_per_term),
-            "meals_fee": float(f.meals_fee),
-            "transport_fee": float(f.transport_fee),
-            "total_fee": float(f.total_fee),
-            "file": f.fee_structure_file,  # Cloudinary PDF URL
-        }
-        for f in FeeStructure.objects.all()
-    ]
-    return Response(data)
+    queryset = FeeStructure.objects.all()
+    serializer = FeeStructureSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def api_events(request):
+    queryset = Event.objects.all()
     month = request.GET.get("month")
     category = request.GET.get("category")
-
-    events_qs = Event.objects.all()
     if month:
-        events_qs = events_qs.filter(month=month)
+        queryset = queryset.filter(month=month)
     if category:
-        events_qs = events_qs.filter(category=category)
-
-    events_qs = events_qs.order_by("-year", "month", "day")
-
-    data = [
-        {
-            "id": e.id,
-            "title": e.title,
-            "category": e.category,
-            "month": e.month,
-            "day": e.day,
-            "year": e.year,
-            "start_time": e.start_time.strftime("%I:%M %p"),
-            "end_time": e.end_time.strftime("%I:%M %p"),
-            "location": e.location,
-            "description": e.description,
-        }
-        for e in events_qs
-    ]
-    return Response(data)
+        queryset = queryset.filter(category=category)
+    queryset = queryset.order_by("-year", "month", "day")
+    serializer = EventSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def api_featured_events(request):
-    data = [
-        {
-            "id": f.id,
-            "title": f.title,
-            "date": f.get_date_range_display(),
-            "image": f.image,  # direct URL
-            "description": f.description,
-        }
-        for f in FeaturedEvent.objects.all()
-    ]
-    return Response(data)
+    queryset = FeaturedEvent.objects.all()
+    serializer = FeaturedEventSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def api_alumni(request):
-    data = [
-        {
-            "id": a.id,
-            "name": a.name,
-            "title": a.title,
-            "year_of_completion": a.year_of_completion,
-            "message": a.message,
-            "image": a.image,  # direct URL
-        }
-        for a in AlumniMessage.objects.all()
-    ]
-    return Response(data)
+    queryset = AlumniMessage.objects.all()
+    serializer = AlumniMessageSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
 def api_admission_deadlines(request):
-    data = [
-        {
-            "id": d.id,
-            "name": d.name,
-            "deadline_date": d.deadline_date,
-        }
-        for d in KeyAdmissionDeadline.objects.all()
-    ]
-    return Response(data)
+    queryset = KeyAdmissionDeadline.objects.all().order_by('deadline_date')
+    serializer = KeyAdmissionDeadlineSerializer(queryset, many=True)
+    return Response(serializer.data)
 
 
 # =====================================================
-# FORM SUBMISSION APIs (WRITE)
+# Write APIs
 # =====================================================
 @api_view(["POST"])
 def api_admissions(request):
-    name = request.data.get("name")
-    email = request.data.get("email")
-    phone = request.data.get("phone")
-    message = request.data.get("message")
-
-    if not name or not email or not message:
-        return Response(
-            {"error": "Name, email and message are required."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    AdmissionMessage.objects.create(
-        name=name,
-        email=email,
-        phone=phone,
-        message=message,
-    )
-
-    return Response(
-        {"success": "Admission request submitted successfully."},
-        status=status.HTTP_201_CREATED,
-    )
+    serializer = AdmissionMessageSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"success": "Admission request submitted successfully."}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
 def api_contact(request):
-    EnquiryMessages.objects.create(
-        name=request.data.get("name"),
-        email=request.data.get("email"),
-        subject=request.data.get("subject"),
-        message=request.data.get("message"),
-    )
-
-    return Response(
-        {"success": "Your message has been sent successfully."},
-        status=status.HTTP_201_CREATED,
-    )
+    serializer = EnquiryMessagesSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"success": "Your message has been sent successfully."}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

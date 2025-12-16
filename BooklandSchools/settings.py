@@ -52,13 +52,9 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
-
-    # KEEP CSRF → required for Django admin
     "django.middleware.csrf.CsrfViewMiddleware",
-
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -90,7 +86,7 @@ TEMPLATES = [
 ]
 
 # =====================================================
-# DATABASE (SAFE FOR TESTING + RENDER)
+# DATABASE (LOCAL + RENDER SAFE)
 # =====================================================
 DATABASES = {
     "default": dj_database_url.config(
@@ -118,7 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# STATIC & MEDIA FILES (ADMIN SAFE)
+# STATIC & MEDIA FILES
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -127,8 +123,11 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Optional fallback image path for frontend JS
+FALLBACK_IMAGE = "/static/images/default-fallback.jpg"
+
 # =====================================================
-# CORS (VERCEL + LOCAL)
+# CORS (LOCAL + VERCEL)
 # =====================================================
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
@@ -136,12 +135,10 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://bookland-frontend-two.vercel.app",
 ]
-
-# Do NOT enable credentials unless using cookies
 CORS_ALLOW_CREDENTIALS = False
 
 # =====================================================
-# CSRF TRUSTED ORIGINS (ADMIN + API SAFE)
+# CSRF TRUSTED ORIGINS
 # =====================================================
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8000",
@@ -150,10 +147,20 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # =====================================================
-# DJANGO REST FRAMEWORK (TESTING FRIENDLY)
+# DJANGO REST FRAMEWORK (API SAFE)
 # =====================================================
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
 }
+
+# =====================================================
+# DEBUG MEDIA SERVING IN DEVELOPMENT
+# =====================================================
+if DEBUG:
+    from django.conf.urls.static import static
+    from django.urls import path
+
+    # This is only needed if you reference urlpatterns here for testing
+    urlpatterns = static(MEDIA_URL, document_root=MEDIA_ROOT)

@@ -67,18 +67,34 @@ def api_gallery(request):
 
 
 # =====================================================
-# Fees API - updated to return fee_file_url (public or signed)
+# Fees API - returns all fee structures with public PDF URLs
 # =====================================================
 @api_view(['GET'])
 def api_fees(request):
     """
-    Returns all fee structures with public PDF URLs.
+    Returns all fee structures with guaranteed public PDF URLs.
     """
     fees = FeeStructure.objects.all().order_by('level')
     serializer = FeeStructureSerializer(fees, many=True)
     return Response(serializer.data)
 
 
+@api_view(['POST'])
+def api_create_fee(request):
+    """
+    Optional: Create a new FeeStructure via API (with PDF upload).
+    Frontend can send 'fee_structure_file' via multipart/form-data.
+    """
+    serializer = FeeStructureSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"success": "Fee structure created successfully."}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# =====================================================
+# Events APIs
+# =====================================================
 @api_view(["GET"])
 def api_events(request):
     queryset = Event.objects.all()
@@ -100,6 +116,9 @@ def api_featured_events(request):
     return Response(serializer.data)
 
 
+# =====================================================
+# Alumni
+# =====================================================
 @api_view(["GET"])
 def api_alumni(request):
     queryset = AlumniMessage.objects.all()
@@ -107,6 +126,9 @@ def api_alumni(request):
     return Response(serializer.data)
 
 
+# =====================================================
+# Admission Deadlines
+# =====================================================
 @api_view(["GET"])
 def api_admission_deadlines(request):
     queryset = KeyAdmissionDeadline.objects.all().order_by('deadline_date')

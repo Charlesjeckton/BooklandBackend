@@ -1,6 +1,7 @@
 import datetime
 from django.db import models
 from cloudinary.models import CloudinaryField
+from typing import Optional
 
 
 # =========================
@@ -97,12 +98,11 @@ class FeeStructure(models.Model):
     tuition_per_term = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
     meals_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
     transport_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
-    total_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES total")
+    total_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES total", editable=False)
 
     fee_structure_file = CloudinaryField(
-        resource_type='raw',
-        folder='fee_structures/',
-        type='upload',  # ✅ ensures public access
+        resource_type='raw',        # raw ensures PDF/public access
+        folder='fee_structures',    # store PDFs in this folder
         blank=True,
         null=True,
         help_text="Upload PDF file (public)"
@@ -113,6 +113,23 @@ class FeeStructure(models.Model):
     def __str__(self):
         return self.level
 
+    @property
+    def file_url(self) -> Optional[str]:
+        """
+        Returns a guaranteed public URL for the PDF.
+        IDE-friendly: avoids 'unresolved attribute reference' warnings.
+        """
+        file_obj = getattr(self, 'fee_structure_file', None)
+        if file_obj:
+            return getattr(file_obj, 'url', None)
+        return None
+
+    def save(self, *args, **kwargs):
+        """
+        Auto-calculate total_fee before saving.
+        """
+        self.total_fee = (self.tuition_per_term or 0) + (self.meals_fee or 0) + (self.transport_fee or 0)
+        super().save(*args, **kwargs)
 
 # =========================
 # Events

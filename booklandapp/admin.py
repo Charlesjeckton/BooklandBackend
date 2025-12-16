@@ -26,8 +26,8 @@ from .forms import (
 # =====================================================
 # Utility to display Cloudinary image previews
 # =====================================================
-def cloudinary_image_preview(obj, field_name):
-    url = getattr(obj, field_name)
+def cloudinary_image_preview(obj, field_name="image"):
+    url = getattr(obj, field_name, None)
     if url:
         return format_html(
             '<img src="{}" width="100" height="100" style="object-fit: cover; border-radius: 4px;" />',
@@ -42,18 +42,18 @@ cloudinary_image_preview.short_description = "Preview"
 # =====================================================
 # Generic Admin Mixin for Image Preview
 # =====================================================
-class ImagePreviewAdminMixin:
+class ImagePreviewAdminMixin(admin.ModelAdmin):
     readonly_fields = ("image_preview",)
 
     def image_preview(self, obj):
-        return cloudinary_image_preview(obj, "image")
+        return cloudinary_image_preview(obj)
 
 
 # =====================================================
 # Testimonials Admin
 # =====================================================
 @admin.register(TestimonialsMessage)
-class TestimonialsMessageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
+class TestimonialsMessageAdmin(ImagePreviewAdminMixin):
     form = TestimonialsMessageForm
     list_display = ("name", "title", "testimonial", "image_preview")
 
@@ -62,7 +62,7 @@ class TestimonialsMessageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
 # Leadership Admin
 # =====================================================
 @admin.register(LeadershipMessage)
-class LeadershipMessageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
+class LeadershipMessageAdmin(ImagePreviewAdminMixin):
     form = LeadershipMessageForm
     list_display = ("salutation", "name", "designation", "message", "image_preview")
 
@@ -71,7 +71,7 @@ class LeadershipMessageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
 # Alumni Admin
 # =====================================================
 @admin.register(AlumniMessage)
-class AlumniMessageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
+class AlumniMessageAdmin(ImagePreviewAdminMixin):
     form = AlumniMessageForm
     list_display = ("name", "title", "year_of_completion", "message", "image_preview")
 
@@ -80,7 +80,7 @@ class AlumniMessageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
 # Gallery Image Admin
 # =====================================================
 @admin.register(GalleryImage)
-class GalleryImageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
+class GalleryImageAdmin(ImagePreviewAdminMixin):
     form = GalleryImageForm
     list_display = ("title", "image_preview")
 
@@ -89,19 +89,27 @@ class GalleryImageAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
 # Featured Event Admin
 # =====================================================
 @admin.register(FeaturedEvent)
-class FeaturedEventAdmin(ImagePreviewAdminMixin, admin.ModelAdmin):
+class FeaturedEventAdmin(ImagePreviewAdminMixin):
     form = FeaturedEventForm
     list_display = ("title", "start_date", "end_date", "image_preview")
 
 
 # =====================================================
-# Fee Structure Admin (with PDF download & preview)
+# Fee Structure Admin (PDF download & preview)
 # =====================================================
 @admin.register(FeeStructure)
 class FeeStructureAdmin(admin.ModelAdmin):
     form = FeeStructureForm
-    list_display = ("level", "tuition_per_term", "meals_fee", "transport_fee", "total_fee", "file_link", "preview_link")
-    readonly_fields = ("file_link", "preview_link")
+    list_display = (
+        "level",
+        "tuition_per_term",
+        "meals_fee",
+        "transport_fee",
+        "total_fee",
+        "file_link",
+        "preview_link",
+    )
+    readonly_fields = ("file_link", "preview_link", "total_fee")
     list_filter = ("level",)
     search_fields = ("level",)
 
@@ -111,7 +119,7 @@ class FeeStructureAdmin(admin.ModelAdmin):
         }),
         ("PDF Document", {
             "fields": ("fee_structure_file", "file_link", "preview_link"),
-            "description": "Upload PDF file (max 10MB). All PDFs are public."
+            "description": "Upload PDF file (max 10MB). All PDFs are public and stored in Cloudinary."
         }),
     )
 
@@ -121,7 +129,7 @@ class FeeStructureAdmin(admin.ModelAdmin):
                 '<a href="{}" target="_blank" style="background: #28a745; '
                 'color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
                 'font-weight: bold;">⬇️ Download PDF</a>',
-                obj.fee_structure_file.url
+                getattr(obj.fee_structure_file, "url", "#")
             )
         return format_html('<span style="color: #dc3545;">No PDF uploaded</span>')
 
@@ -130,10 +138,10 @@ class FeeStructureAdmin(admin.ModelAdmin):
     def preview_link(self, obj):
         if obj.fee_structure_file:
             return format_html(
-                '<a href="{}" target="_blank" style="background: #17a2b8; '
-                'color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
+                '<a href="{}" target="_blank" style="background: #17a2b8;'
+                ' color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
                 'margin-left: 10px;">👁️ Preview PDF</a>',
-                obj.fee_structure_file.url
+                getattr(obj.fee_structure_file, "url", "#")
             )
         return ""
 

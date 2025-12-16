@@ -15,7 +15,6 @@ from .models import (
     KeyAdmissionDeadline,
 )
 
-
 # ==============================
 # READ SERIALIZERS
 # ==============================
@@ -38,18 +37,28 @@ class GalleryImageSerializer(serializers.ModelSerializer):
 
 
 class FeeStructureSerializer(serializers.ModelSerializer):
-    fee_file_url = serializers.SerializerMethodField()
+    file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = FeeStructure
         fields = [
-            'id', 'level', 'tuition_per_term', 'meals_fee',
-            'transport_fee', 'total_fee', 'fee_file_url'
+            'id',
+            'level',
+            'tuition_per_term',
+            'meals_fee',
+            'transport_fee',
+            'total_fee',
+            'fee_structure_file',
+            'file_url',
+            'created_at'
         ]
+        read_only_fields = ['total_fee', 'file_url', 'created_at']
 
-    def get_fee_file_url(self, obj):
-        # Public URL, no signed URLs needed
-        return obj.fee_structure_file.url if obj.fee_structure_file else None
+    def get_file_url(self, obj):
+        """
+        Returns a guaranteed public URL for the PDF file.
+        """
+        return obj.file_url
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -126,3 +135,27 @@ class EnquiryMessagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = EnquiryMessages
         fields = ["name", "email", "subject", "message"]
+
+
+# ==============================
+# Optional: Serializer for creating FeeStructure via API
+# ==============================
+class FeeStructureCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating FeeStructure via API with PDF upload.
+    """
+    class Meta:
+        model = FeeStructure
+        fields = [
+            'level',
+            'tuition_per_term',
+            'meals_fee',
+            'transport_fee',
+            'fee_structure_file'
+        ]
+
+    def create(self, validated_data):
+        """
+        total_fee is auto-calculated in model save(), no need here.
+        """
+        return FeeStructure.objects.create(**validated_data)

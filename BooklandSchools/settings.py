@@ -2,6 +2,9 @@ import os
 from pathlib import Path
 import dj_database_url
 from dotenv import load_dotenv
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # =====================================================
 # LOAD ENVIRONMENT VARIABLES
@@ -40,6 +43,8 @@ INSTALLED_APPS = [
     # Third-party
     "corsheaders",
     "rest_framework",
+    "cloudinary",
+    "cloudinary_storage",
 
     # Local apps
     "booklandapp",
@@ -67,7 +72,7 @@ ROOT_URLCONF = "BooklandSchools.urls"
 WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 
 # =====================================================
-# TEMPLATES (ADMIN SAFE)
+# TEMPLATES
 # =====================================================
 TEMPLATES = [
     {
@@ -86,7 +91,7 @@ TEMPLATES = [
 ]
 
 # =====================================================
-# DATABASE (LOCAL + RENDER SAFE)
+# DATABASE
 # =====================================================
 DATABASES = {
     "default": dj_database_url.config(
@@ -114,14 +119,30 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # =====================================================
-# STATIC & MEDIA FILES
+# STATIC FILES (WHITENOISE)
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+# =====================================================
+# CLOUDINARY MEDIA
+# =====================================================
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME")
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY")
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET")
+
+cloudinary.config(
+    cloud_name=CLOUDINARY_CLOUD_NAME,
+    api_key=CLOUDINARY_API_KEY,
+    api_secret=CLOUDINARY_API_SECRET,
+    secure=True
+)
+
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+
+MEDIA_URL = "/media/"  # Django will redirect to Cloudinary URLs automatically
+MEDIA_ROOT = BASE_DIR / "media"  # fallback for local dev (optional)
 
 # Optional fallback image path for frontend JS
 FALLBACK_IMAGE = "/static/images/default-fallback.jpg"
@@ -147,7 +168,7 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # =====================================================
-# DJANGO REST FRAMEWORK (API SAFE)
+# DJANGO REST FRAMEWORK
 # =====================================================
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -162,5 +183,4 @@ if DEBUG:
     from django.conf.urls.static import static
     from django.urls import path
 
-    # This is only needed if you reference urlpatterns here for testing
     urlpatterns = static(MEDIA_URL, document_root=MEDIA_ROOT)

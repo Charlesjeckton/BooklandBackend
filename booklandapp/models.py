@@ -2,6 +2,9 @@ import datetime
 from django.db import models
 
 
+# =========================
+# Admission Messages
+# =========================
 class AdmissionMessage(models.Model):
     name = models.CharField(max_length=50)
     email = models.EmailField()
@@ -9,9 +12,12 @@ class AdmissionMessage(models.Model):
     message = models.TextField()
 
     def __str__(self):
-        return self.name + " - " + self.message
+        return f"{self.name} - {self.message}"
 
 
+# =========================
+# Enquiry Messages
+# =========================
 class EnquiryMessages(models.Model):
     name = models.CharField(max_length=50)
     email = models.EmailField()
@@ -19,49 +25,64 @@ class EnquiryMessages(models.Model):
     message = models.TextField()
 
     def __str__(self):
-        return self.name + " - " + self.subject
+        return f"{self.name} - {self.subject}"
 
 
+# =========================
+# Testimonials
+# =========================
 class TestimonialsMessage(models.Model):
     name = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='images/testimonials/')
+    image = models.URLField(blank=True, null=True)  # Cloudinary URL
     title = models.CharField(max_length=50)
     testimonial = models.TextField()
 
     def __str__(self):
-        return self.name + " - " + self.title
+        return f"{self.name} - {self.title}"
 
 
+# =========================
+# Leadership Messages
+# =========================
 class LeadershipMessage(models.Model):
     salutation = models.CharField(max_length=10)
     name = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='images/leadership/')
+    image = models.URLField(blank=True, null=True)  # Cloudinary URL
     designation = models.CharField(max_length=50)
     message = models.TextField()
 
     def __str__(self):
-        return self.name + " - " + self.designation
+        return f"{self.name} - {self.designation}"
 
 
+# =========================
+# Alumni Messages
+# =========================
 def current_year():
     return datetime.date.today().year
 
 
 def year_choices():
-    return [(r, r) for r in range(2014, current_year() + 0)]
+    return [(r, r) for r in range(2014, current_year() + 1)]
 
 
 class AlumniMessage(models.Model):
     name = models.CharField(max_length=50)
-    image = models.ImageField(upload_to='images/alumni/')
+    image = models.URLField(blank=True, null=True)  # Cloudinary URL
     title = models.CharField(max_length=100)
-    year_of_completion = models.IntegerField(choices=year_choices(), default=current_year)
+    year_of_completion = models.IntegerField(
+        choices=year_choices(),
+        default=current_year
+    )
     message = models.TextField()
 
     def __str__(self):
-        return self.name + " - " + self.title
+        return f"{self.name} - {self.title}"
 
 
+# =========================
+# Fee Structure
+# =========================
 class FeeStructure(models.Model):
     LEVEL_CHOICES = [
         ("Play Group", "Play Group"),
@@ -96,17 +117,19 @@ class FeeStructure(models.Model):
         decimal_places=2,
         help_text="Enter amount in KES"
     )
-    fee_structure_file = models.FileField(
-        upload_to='fee_structures/',
+    fee_structure_file = models.URLField(
         blank=True,
         null=True,
-        help_text="Upload a PDF file of the fee structure"
+        help_text="Cloudinary PDF URL"
     )
 
     def __str__(self):
         return self.level
 
 
+# =========================
+# Events
+# =========================
 class Event(models.Model):
     CATEGORY_CHOICES = [
         ('Arts', 'Arts'),
@@ -147,11 +170,14 @@ class Event(models.Model):
         return f"{self.title} - {self.month} {self.day}, {self.year}"
 
 
+# =========================
+# Featured Events
+# =========================
 class FeaturedEvent(models.Model):
     title = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
-    image = models.ImageField(upload_to='featured_events/')
+    image = models.URLField(blank=True, null=True)  # Cloudinary URL
     description = models.TextField()
 
     class Meta:
@@ -167,14 +193,20 @@ class FeaturedEvent(models.Model):
         return self.start_date.strftime('%B %d, %Y')
 
 
+# =========================
+# Gallery Images
+# =========================
 class GalleryImage(models.Model):
     title = models.CharField(max_length=255, blank=True)
-    image = models.ImageField(upload_to='gallery/')
+    image = models.URLField(blank=True, null=True)  # Cloudinary URL
 
     def __str__(self):
-        return self.title
+        return self.title or "Gallery Image"
 
 
+# =========================
+# Admission Deadlines
+# =========================
 class KeyAdmissionDeadline(models.Model):
     SEMESTER_CHOICES = [
         ('Term One', 'Term One'),
@@ -188,10 +220,10 @@ class KeyAdmissionDeadline(models.Model):
         max_length=50,
         choices=SEMESTER_CHOICES,
         unique=True,
-        help_text="Name of the admission period (e.g. Term Three)"
+        help_text="Name of the admission period"
     )
     deadline_date = models.DateField(
-        help_text="Deadline date for the admission period"
+        help_text="Deadline date"
     )
 
     class Meta:

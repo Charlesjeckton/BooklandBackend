@@ -21,7 +21,6 @@ from .models import (
 # =====================================================
 # GENERAL / HEALTH CHECK
 # =====================================================
-
 @api_view(["GET"])
 def api_home(request):
     return Response({
@@ -34,7 +33,6 @@ def api_home(request):
 # =====================================================
 # CONTENT APIs (READ)
 # =====================================================
-
 @api_view(["GET"])
 def api_testimonials(request):
     data = [
@@ -43,7 +41,7 @@ def api_testimonials(request):
             "name": t.name,
             "title": t.title,
             "testimonial": t.testimonial,
-            "image": t.image.url if t.image else None,
+            "image": t.image,  # direct URL
         }
         for t in TestimonialsMessage.objects.all()
     ]
@@ -59,7 +57,7 @@ def api_leadership(request):
             "name": l.name,
             "designation": l.designation,
             "message": l.message,
-            "image": l.image.url if l.image else None,
+            "image": l.image,  # direct URL
         }
         for l in LeadershipMessage.objects.all()
     ]
@@ -72,7 +70,7 @@ def api_gallery(request):
         {
             "id": g.id,
             "title": g.title,
-            "image": g.image.url if g.image else None,
+            "image": g.image,  # direct URL
         }
         for g in GalleryImage.objects.all()
     ]
@@ -89,7 +87,7 @@ def api_fees(request):
             "meals_fee": float(f.meals_fee),
             "transport_fee": float(f.transport_fee),
             "total_fee": float(f.total_fee),
-            "file": f.fee_structure_file.url if f.fee_structure_file else None,
+            "file": f.fee_structure_file,  # Cloudinary PDF URL
         }
         for f in FeeStructure.objects.all()
     ]
@@ -102,7 +100,6 @@ def api_events(request):
     category = request.GET.get("category")
 
     events_qs = Event.objects.all()
-
     if month:
         events_qs = events_qs.filter(month=month)
     if category:
@@ -135,7 +132,7 @@ def api_featured_events(request):
             "id": f.id,
             "title": f.title,
             "date": f.get_date_range_display(),
-            "image": f.image.url if f.image else None,
+            "image": f.image,  # direct URL
             "description": f.description,
         }
         for f in FeaturedEvent.objects.all()
@@ -152,7 +149,7 @@ def api_alumni(request):
             "title": a.title,
             "year_of_completion": a.year_of_completion,
             "message": a.message,
-            "image": a.image.url if a.image else None,
+            "image": a.image,  # direct URL
         }
         for a in AlumniMessage.objects.all()
     ]
@@ -164,9 +161,8 @@ def api_admission_deadlines(request):
     data = [
         {
             "id": d.id,
-            "title": d.title,
-            "deadline": d.deadline,
-            "description": d.description,
+            "name": d.name,
+            "deadline_date": d.deadline_date,
         }
         for d in KeyAdmissionDeadline.objects.all()
     ]
@@ -176,7 +172,6 @@ def api_admission_deadlines(request):
 # =====================================================
 # FORM SUBMISSION APIs (WRITE)
 # =====================================================
-
 @api_view(["POST"])
 def api_admissions(request):
     name = request.data.get("name")

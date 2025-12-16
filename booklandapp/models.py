@@ -1,7 +1,6 @@
 import datetime
 from django.db import models
 from cloudinary.models import CloudinaryField
-from typing import Optional
 
 
 # =========================
@@ -95,14 +94,15 @@ class FeeStructure(models.Model):
     ]
 
     level = models.CharField(max_length=50, choices=LEVEL_CHOICES, unique=True)
-    tuition_per_term = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
-    meals_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
-    transport_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
-    total_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES total", editable=False)
+    tuition_per_term = models.DecimalField(max_digits=10, decimal_places=2)
+    meals_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    transport_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    total_fee = models.DecimalField(max_digits=10, decimal_places=2)
 
     fee_structure_file = CloudinaryField(
-        resource_type='raw',        # raw ensures PDF/public access
-        folder='fee_structures',    # store PDFs in this folder
+        resource_type='raw',  # Important: PDF/raw type
+        folder='fee_structures/',
+        type='upload',        # Ensures public access
         blank=True,
         null=True,
         help_text="Upload PDF file (public)"
@@ -110,26 +110,16 @@ class FeeStructure(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def file_url(self):
+        """Return fully public PDF URL"""
+        if self.fee_structure_file:
+            return self.fee_structure_file.url  # Cloudinary public URL
+        return None
+
     def __str__(self):
         return self.level
 
-    @property
-    def file_url(self) -> Optional[str]:
-        """
-        Returns a guaranteed public URL for the PDF.
-        IDE-friendly: avoids 'unresolved attribute reference' warnings.
-        """
-        file_obj = getattr(self, 'fee_structure_file', None)
-        if file_obj:
-            return getattr(file_obj, 'url', None)
-        return None
-
-    def save(self, *args, **kwargs):
-        """
-        Auto-calculate total_fee before saving.
-        """
-        self.total_fee = (self.tuition_per_term or 0) + (self.meals_fee or 0) + (self.transport_fee or 0)
-        super().save(*args, **kwargs)
 
 # =========================
 # Events

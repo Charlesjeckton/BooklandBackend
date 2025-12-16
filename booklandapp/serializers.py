@@ -50,14 +50,11 @@ class FeeStructureSerializer(serializers.ModelSerializer):
             'total_fee',
             'fee_structure_file',
             'file_url',
-            'created_at'
+            'created_at',
         ]
         read_only_fields = ['total_fee', 'file_url', 'created_at']
 
     def get_file_url(self, obj):
-        """
-        Returns a guaranteed public URL for the PDF file.
-        """
         return obj.file_url
 
 

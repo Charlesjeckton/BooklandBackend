@@ -99,53 +99,30 @@ class FeaturedEventAdmin(ImagePreviewAdminMixin):
 # =====================================================
 @admin.register(FeeStructure)
 class FeeStructureAdmin(admin.ModelAdmin):
-    form = FeeStructureForm
-    list_display = (
-        "level",
-        "tuition_per_term",
-        "meals_fee",
-        "transport_fee",
-        "total_fee",
-        "file_link",
-        "preview_link",
-    )
-    readonly_fields = ("file_link", "preview_link", "total_fee")
-    list_filter = ("level",)
+    list_display = ("level", "tuition_per_term", "meals_fee", "transport_fee", "total_fee", "download_link")
+    readonly_fields = ("download_link",)
     search_fields = ("level",)
+    list_filter = ("level",)
 
     fieldsets = (
         ("Fee Information", {
             "fields": ("level", "tuition_per_term", "meals_fee", "transport_fee", "total_fee")
         }),
         ("PDF Document", {
-            "fields": ("fee_structure_file", "file_link", "preview_link"),
-            "description": "Upload PDF file (max 10MB). All PDFs are public and stored in Cloudinary."
+            "fields": ("fee_structure_file", "download_link"),
+            "description": "Upload PDF file (public). All PDFs will be publicly accessible."
         }),
     )
 
-    def file_link(self, obj):
+    def download_link(self, obj):
         if obj.fee_structure_file:
             return format_html(
-                '<a href="{}" target="_blank" style="background: #28a745; '
-                'color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
-                'font-weight: bold;">⬇️ Download PDF</a>',
-                getattr(obj.fee_structure_file, "url", "#")
+                '<a href="{}" target="_blank" class="btn btn-primary btn-sm">'
+                '⬇️ Download PDF</a>', obj.file_url
             )
-        return format_html('<span style="color: #dc3545;">No PDF uploaded</span>')
+        return "No PDF uploaded"
 
-    file_link.short_description = "Download"
-
-    def preview_link(self, obj):
-        if obj.fee_structure_file:
-            return format_html(
-                '<a href="{}" target="_blank" style="background: #17a2b8;'
-                ' color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
-                'margin-left: 10px;">👁️ Preview PDF</a>',
-                getattr(obj.fee_structure_file, "url", "#")
-            )
-        return ""
-
-    preview_link.short_description = "Preview"
+    download_link.short_description = "PDF Download"
 
 
 # =====================================================

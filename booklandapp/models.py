@@ -96,39 +96,53 @@ class FeeStructure(models.Model):
     level = models.CharField(
         max_length=50,
         choices=LEVEL_CHOICES,
-        unique=True
+        unique=True,
+        help_text="Select the school level for this fee structure"
     )
+
     tuition_per_term = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
+        help_text="Tuition fee per term in KES"
     )
+
     meals_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
+        help_text="Meals fee per term in KES"
     )
+
     transport_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
+        help_text="Transport fee per term in KES (optional)"
     )
+
     total_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
-    )
-    # CHANGE TO CloudinaryField:
-    fee_structure_file = CloudinaryField(
-        resource_type='raw',  # 'raw' for PDF files
-        folder='fee_structures/',
-        blank=True,
-        null=True,
-        help_text="Upload fee structure PDF"
+        help_text="Total approximate fee per term in KES"
     )
 
+    # CloudinaryField for PDF upload
+    fee_structure_file = CloudinaryField(
+        resource_type='raw',  # 'raw' for PDF files
+        folder='fee_structures/',  # Optional folder in Cloudinary
+        blank=True,
+        null=True,
+        help_text="Upload the fee structure PDF (public or private)"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)  # Optional: track when record was created
+    updated_at = models.DateTimeField(auto_now=True)  # Optional: track when record was updated
+
+    class Meta:
+        verbose_name = "Fee Structure"
+        verbose_name_plural = "Fee Structures"
+        ordering = ['level']  # Orders by level in admin and queries
+
     def __str__(self):
-        return self.level
+        return f"{self.level} - Total: KES {self.total_fee}"
 
 
 # =========================

@@ -50,7 +50,7 @@ class TestimonialsMessageForm(forms.ModelForm):
                 quality="auto",
                 fetch_format="auto",
             )
-            instance.image = upload_result["secure_url"]
+            instance.image = upload_result.get("secure_url")
         if commit:
             instance.save()
         return instance
@@ -76,7 +76,7 @@ class LeadershipMessageForm(forms.ModelForm):
                 quality="auto",
                 fetch_format="auto",
             )
-            instance.image = upload_result["secure_url"]
+            instance.image = upload_result.get("secure_url")
         if commit:
             instance.save()
         return instance
@@ -102,7 +102,7 @@ class AlumniMessageForm(forms.ModelForm):
                 quality="auto",
                 fetch_format="auto",
             )
-            instance.image = upload_result["secure_url"]
+            instance.image = upload_result.get("secure_url")
         if commit:
             instance.save()
         return instance
@@ -122,14 +122,13 @@ class GalleryImageForm(forms.ModelForm):
         instance = super().save(commit=False)
         image_file = self.cleaned_data.get("upload_image")
         if image_file:
-            # Upload to Cloudinary
             upload_result = cloudinary.uploader.upload(
                 image_file,
                 folder="bookland/gallery",
                 quality="auto",
                 fetch_format="auto",
             )
-            instance.image = upload_result["secure_url"]
+            instance.image = upload_result.get("secure_url")
         if commit:
             instance.save()
         return instance
@@ -149,14 +148,13 @@ class FeaturedEventForm(forms.ModelForm):
         instance = super().save(commit=False)
         image_file = self.cleaned_data.get("upload_image")
         if image_file:
-            # Upload to Cloudinary
             upload_result = cloudinary.uploader.upload(
                 image_file,
                 folder="bookland/featured_events",
                 quality="auto",
                 fetch_format="auto",
             )
-            instance.image = upload_result["secure_url"]
+            instance.image = upload_result.get("secure_url")
         if commit:
             instance.save()
         return instance
@@ -169,10 +167,16 @@ class FeeStructureForm(forms.ModelForm):
     class Meta:
         model = FeeStructure
         fields = [
-            "level", "tuition_per_term", "meals_fee",
-            "transport_fee", "total_fee", "fee_structure_file"
+            "level",
+            "tuition_per_term",
+            "meals_fee",
+            "transport_fee",
+            "total_fee",
+            "fee_structure_file",
         ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['fee_structure_file'].help_text = "Upload PDF file (max 10MB). Files will be publicly accessible."
+        self.fields['fee_structure_file'].help_text = (
+            "Upload PDF file (max 10MB). Files can be set as public or private."
+        )

@@ -1,5 +1,6 @@
 from rest_framework import serializers
-
+from django.utils import timezone
+from cloudinary.utils import cloudinary_url
 
 from .models import (
     AdmissionMessage,
@@ -37,11 +38,8 @@ class GalleryImageSerializer(serializers.ModelSerializer):
 
 
 class FeeStructureSerializer(serializers.ModelSerializer):
-    tuition_per_term = serializers.DecimalField(max_digits=12, decimal_places=2)
-    meals_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
-    transport_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
-    total_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
-    file = serializers.SerializerMethodField()
+    # Direct public URL for frontend
+    fee_file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = FeeStructure
@@ -52,18 +50,16 @@ class FeeStructureSerializer(serializers.ModelSerializer):
             "meals_fee",
             "transport_fee",
             "total_fee",
-            "file",
+            "fee_file_url",
         ]
 
-    def get_file(self, obj):
-        if not obj.fee_structure_file:
-            return None
-
-        # SIMPLE: Return public URL directly
-        try:
-            return obj.fee_structure_file.url
-        except:
-            return None
+    def get_fee_file_url(self, obj):
+        """
+        Returns the public URL for the uploaded PDF.
+        """
+        if obj.fee_structure_file:
+            return obj.fee_structure_file.url  # Direct public URL
+        return None
 
 
 class EventSerializer(serializers.ModelSerializer):
@@ -120,7 +116,6 @@ class KeyAdmissionDeadlineSerializer(serializers.ModelSerializer):
 # ==============================
 # WRITE SERIALIZERS
 # ==============================
-
 class AdmissionMessageSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=100)
     email = serializers.EmailField()

@@ -14,7 +14,7 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # =====================================================
-# SECURITY - CRITICAL UPDATES
+# SECURITY
 # =====================================================
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
@@ -29,7 +29,7 @@ ALLOWED_HOSTS = [
     ".onrender.com",
 ]
 
-# Security headers - ONLY in production
+# Security headers - Only in production
 if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -44,7 +44,7 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
 
 # =====================================================
-# APPLICATIONS - FIXED ORDER
+# APPLICATIONS
 # =====================================================
 INSTALLED_APPS = [
     # Django core
@@ -55,9 +55,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third-party - CRITICAL: cloudinary_storage BEFORE cloudinary
-    "cloudinary_storage",  # MUST BE FIRST
-    "cloudinary",  # MUST BE SECOND
+    # Third-party
+    "cloudinary_storage",  # Must be before cloudinary
+    "cloudinary",
     "corsheaders",
     "rest_framework",
 
@@ -69,9 +69,9 @@ INSTALLED_APPS = [
 # MIDDLEWARE
 # =====================================================
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # Must be first
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -92,7 +92,7 @@ WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],  # Add global templates if used
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -121,34 +121,29 @@ DATABASES = {
 }
 
 # =====================================================
-# INTERNATIONALIZATION & PASSWORDS
+# INTERNATIONALIZATION
 # =====================================================
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Africa/Nairobi"
 USE_I18N = True
 USE_TZ = True
 
+# =====================================================
+# PASSWORDS
+# =====================================================
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-        "OPTIONS": {
-            "min_length": 8,
-        }
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Password hashers - IMPORTANT: Add BCrypt fallback
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
-    'django.contrib.auth.hashers.BCryptPasswordHasher',  # Added fallback
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -158,18 +153,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # =====================================================
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # =====================================================
-# CLOUDINARY MEDIA - FIXED IMPORT
+# MEDIA / CLOUDINARY
 # =====================================================
-# IMPORTANT: Move cloudinary import here, after INSTALLED_APPS
 CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME", "")
 CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY", "")
 CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 
-# Configure Cloudinary only if credentials exist
 if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
     import cloudinary
     import cloudinary.uploader
@@ -189,14 +181,12 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # =====================================================
-# CORS - PRODUCTION READY
+# CORS / CSRF
 # =====================================================
 CORS_ALLOW_ALL_ORIGINS = False
-
 CORS_ALLOWED_ORIGINS = [
     "https://bookland-frontend-two.vercel.app",
 ]
-
 if DEBUG:
     CORS_ALLOWED_ORIGINS.extend([
         "http://localhost:3000",
@@ -206,38 +196,16 @@ if DEBUG:
     ])
 
 CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
-    "authorization",
-    "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
-    "cache-control",
+    "accept","accept-encoding","authorization","content-type","dnt",
+    "origin","user-agent","x-csrftoken","x-requested-with","cache-control",
 ]
-
-CORS_ALLOW_METHODS = [
-    "GET",
-    "POST",
-    "PUT",
-    "PATCH",
-    "DELETE",
-    "OPTIONS",
-]
-
-CORS_EXPOSE_HEADERS = []
+CORS_ALLOW_METHODS = ["GET","POST","PUT","PATCH","DELETE","OPTIONS"]
 CORS_ALLOW_CREDENTIALS = False
 
-# =====================================================
-# CSRF TRUSTED ORIGINS
-# =====================================================
 CSRF_TRUSTED_ORIGINS = [
     "https://booklandbackend.onrender.com",
     "https://bookland-frontend-two.vercel.app",
 ]
-
 if DEBUG:
     CSRF_TRUSTED_ORIGINS.extend([
         "http://localhost:8000",
@@ -248,12 +216,8 @@ if DEBUG:
 # REST FRAMEWORK
 # =====================================================
 REST_FRAMEWORK = {
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
-    ],
-    "DEFAULT_RENDERER_CLASSES": [
-        "rest_framework.renderers.JSONRenderer",
-    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": [
         "rest_framework.parsers.JSONParser",
         "rest_framework.parsers.FormParser",
@@ -263,79 +227,43 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "1000/hour",
-        "user": "5000/hour",
-    },
-    "EXCEPTION_HANDLER": "rest_framework.views.exception_handler",
+    "DEFAULT_THROTTLE_RATES": {"anon": "1000/hour", "user": "5000/hour"},
 }
-
 if DEBUG:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
-        "rest_framework.renderers.BrowsableAPIRenderer"
-    )
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append("rest_framework.renderers.BrowsableAPIRenderer")
 
 # =====================================================
-# LOGGING - PRODUCTION
+# LOGGING
 # =====================================================
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{asctime} {levelname} {module} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'WARNING',
-    },
+    'formatters': {'verbose': {'format': '{asctime} {levelname} {module} {message}','style': '{'}},
+    'handlers': {'console': {'class': 'logging.StreamHandler','formatter': 'verbose'}},
+    'root': {'handlers': ['console'],'level': 'WARNING'},
     'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'booklandapp': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
+        'django': {'handlers': ['console'],'level': 'INFO','propagate': False},
+        'booklandapp': {'handlers': ['console'],'level': 'INFO','propagate': False},
     },
 }
 
 # =====================================================
-# ADDITIONAL SECURITY
+# ADDITIONAL SETTINGS
 # =====================================================
-# Email
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' \
-    if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
 
-# Cookies
 SESSION_COOKIE_AGE = 1209600
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 
-# File upload
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 # =====================================================
 # RENDER SPECIFIC
 # =====================================================
-# Render health check endpoint (optional)
 RENDER_HEALTH_CHECK_URL = '/health/'
-
-# Ensure static files are collected on Render
 if 'RENDER' in os.environ:
-    # Render-specific settings
-    MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+    MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')

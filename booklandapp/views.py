@@ -2,8 +2,8 @@ from datetime import date
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-import time
 from cloudinary.utils import cloudinary_url
+from django.utils import timezone
 
 from .models import (
     AdmissionMessage,
@@ -29,7 +29,6 @@ from .serializers import (
     AdmissionMessageSerializer,
     EnquiryMessagesSerializer,
 )
-
 
 # =====================================================
 # General / Health Check
@@ -67,11 +66,18 @@ def api_gallery(request):
     return Response(serializer.data)
 
 
+# =====================================================
+# Fees API - updated to return fee_file_url (public or signed)
+# =====================================================
 @api_view(["GET"])
 def api_fees(request):
-    queryset = FeeStructure.objects.all()
+    """
+    Returns all fee structures with public PDF URLs.
+    Frontend can directly download PDFs without 401 errors.
+    """
+    queryset = FeeStructure.objects.all().order_by('level')
     serializer = FeeStructureSerializer(queryset, many=True)
-    return Response(serializer.data)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])

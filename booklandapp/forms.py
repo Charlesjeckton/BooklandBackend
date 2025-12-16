@@ -166,19 +166,13 @@ class FeaturedEventForm(forms.ModelForm):
 # Fee Structure Form
 # =========================
 class FeeStructureForm(forms.ModelForm):
-    # Remove upload_file field since CloudinaryField handles uploads
     class Meta:
         model = FeeStructure
         fields = [
-            "level",
-            "tuition_per_term",
-            "meals_fee",
-            "transport_fee",
-            "total_fee",
-            "fee_structure_file"  # Direct CloudinaryField
+            "level", "tuition_per_term", "meals_fee",
+            "transport_fee", "total_fee", "fee_structure_file"
         ]
 
-    # Optional: Add widget customization for better UI
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['fee_structure_file'].help_text = "Upload PDF file (max 10MB)"
+        self.fields['fee_structure_file'].help_text = "Upload PDF file (max 10MB). Files will be publicly accessible."

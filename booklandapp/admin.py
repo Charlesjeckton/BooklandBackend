@@ -1,4 +1,6 @@
 from django.contrib import admin
+from cloudinary.utils import cloudinary_url
+import time
 from django.utils.html import format_html
 from .models import (
     AdmissionMessage,
@@ -121,12 +123,13 @@ class FeeStructureAdmin(admin.ModelAdmin):
         }),
         ("PDF Document", {
             "fields": ("fee_structure_file", "file_link", "preview_link"),
-            "description": "Upload PDF file (max 10MB)"
+            "description": "Upload PDF file (max 10MB). Files are publicly accessible."
         }),
     )
 
     def file_link(self, obj):
         if obj.fee_structure_file:
+            # SIMPLE: Just use the .url property for public files
             url = obj.fee_structure_file.url
             return format_html(
                 '<a href="{}" target="_blank" style="background: #28a745; '
@@ -141,11 +144,12 @@ class FeeStructureAdmin(admin.ModelAdmin):
     def preview_link(self, obj):
         if obj.fee_structure_file:
             url = obj.fee_structure_file.url
+            # For PDF preview in browser (opens in new tab)
             return format_html(
                 '<a href="{}" target="_blank" style="background: #17a2b8;'
                 ' color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
                 'margin-left: 10px;">👁️ Preview PDF</a>',
-                url.replace('/raw/upload/', '/raw/upload/fl_attachment/')
+                url
             )
         return ""
 

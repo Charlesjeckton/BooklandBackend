@@ -98,13 +98,16 @@ class FeeStructure(models.Model):
     meals_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
     transport_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES per term")
     total_fee = models.DecimalField(max_digits=10, decimal_places=2, help_text="KES total")
+
     fee_structure_file = CloudinaryField(
         resource_type='raw',
         folder='fee_structures/',
+        type='upload',  # ✅ ensures public access
         blank=True,
         null=True,
         help_text="Upload PDF file (public)"
     )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

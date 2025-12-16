@@ -1,5 +1,6 @@
 import datetime
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 
 # =========================
@@ -117,10 +118,13 @@ class FeeStructure(models.Model):
         decimal_places=2,
         help_text="Enter amount in KES"
     )
-    fee_structure_file = models.URLField(
+    # CHANGE TO CloudinaryField:
+    fee_structure_file = CloudinaryField(
+        resource_type='raw',  # 'raw' for PDF files
+        folder='fee_structures/',
         blank=True,
         null=True,
-        help_text="Cloudinary PDF URL"
+        help_text="Upload fee structure PDF"
     )
 
     def __str__(self):

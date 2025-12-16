@@ -109,15 +109,47 @@ class FeaturedEventAdmin(admin.ModelAdmin):
 @admin.register(FeeStructure)
 class FeeStructureAdmin(admin.ModelAdmin):
     form = FeeStructureForm
+
     list_display = ("level", "tuition_per_term", "meals_fee", "transport_fee", "total_fee", "file_link")
-    readonly_fields = ("file_link",)
+    readonly_fields = ("file_link", "preview_link")
+    list_filter = ("level",)
+    search_fields = ("level",)
+
+    fieldsets = (
+        ("Fee Information", {
+            "fields": ("level", "tuition_per_term", "meals_fee", "transport_fee", "total_fee")
+        }),
+        ("PDF Document", {
+            "fields": ("fee_structure_file", "file_link", "preview_link"),
+            "description": "Upload PDF file (max 10MB)"
+        }),
+    )
 
     def file_link(self, obj):
         if obj.fee_structure_file:
-            return format_html('<a href="{}" target="_blank">View PDF</a>', obj.fee_structure_file)
-        return "No PDF"
+            url = obj.fee_structure_file.url
+            return format_html(
+                '<a href="{}" target="_blank" style="background: #28a745; '
+                'color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
+                'font-weight: bold;">⬇️ Download PDF</a>',
+                url
+            )
+        return format_html('<span style="color: #dc3545;">No PDF uploaded</span>')
 
-    file_link.short_description = "Fee Structure PDF"
+    file_link.short_description = "Download"
+
+    def preview_link(self, obj):
+        if obj.fee_structure_file:
+            url = obj.fee_structure_file.url
+            return format_html(
+                '<a href="{}" target="_blank" style="background: #17a2b8;'
+                ' color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; '
+                'margin-left: 10px;">👁️ Preview PDF</a>',
+                url.replace('/raw/upload/', '/raw/upload/fl_attachment/')
+            )
+        return ""
+
+    preview_link.short_description = "Preview"
 
 
 # =====================================================

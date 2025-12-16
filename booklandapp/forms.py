@@ -166,8 +166,7 @@ class FeaturedEventForm(forms.ModelForm):
 # Fee Structure Form
 # =========================
 class FeeStructureForm(forms.ModelForm):
-    upload_file = forms.FileField(required=False, label="Upload PDF")
-
+    # Remove upload_file field since CloudinaryField handles uploads
     class Meta:
         model = FeeStructure
         fields = [
@@ -176,20 +175,10 @@ class FeeStructureForm(forms.ModelForm):
             "meals_fee",
             "transport_fee",
             "total_fee",
-            "upload_file"
+            "fee_structure_file"  # Direct CloudinaryField
         ]
 
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        file_obj = self.cleaned_data.get("upload_file")
-        if file_obj:
-            # Upload PDF to Cloudinary
-            upload_result = cloudinary.uploader.upload(
-                file_obj,
-                folder="bookland/fee_structures",
-                resource_type="raw"  # Important for PDFs
-            )
-            instance.fee_structure_file = upload_result["secure_url"]
-        if commit:
-            instance.save()
-        return instance
+    # Optional: Add widget customization for better UI
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['fee_structure_file'].help_text = "Upload PDF file (max 10MB)"

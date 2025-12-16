@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from decimal import Decimal
 from cloudinary.utils import cloudinary_url
+import time
 
 from .models import (
     AdmissionMessage,
@@ -37,6 +38,7 @@ class GalleryImageSerializer(serializers.ModelSerializer):
         fields = ["id", "title", "image"]
 
 
+
 class FeeStructureSerializer(serializers.ModelSerializer):
     tuition_per_term = serializers.DecimalField(max_digits=12, decimal_places=2)
     meals_fee = serializers.DecimalField(max_digits=12, decimal_places=2)
@@ -60,15 +62,16 @@ class FeeStructureSerializer(serializers.ModelSerializer):
         if not obj.fee_structure_file:
             return None
 
+        # Generate signed URL with 1-hour expiry
         url, _ = cloudinary_url(
-            obj.fee_structure_file.public_id,
+            str(obj.fee_structure_file),  # Cloudinary public_id
             resource_type="raw",
+            type="authenticated",  # Private download
             sign_url=True,
             secure=True,
-            expires_at=3600,  # 1 hour
+            expires_at=int(time.time()) + 3600  # 1 hour from now
         )
         return url
-
 
 class EventSerializer(serializers.ModelSerializer):
     start_time = serializers.SerializerMethodField()

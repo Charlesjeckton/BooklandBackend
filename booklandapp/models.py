@@ -1,5 +1,6 @@
 import datetime
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 
 # =========================
@@ -97,31 +98,42 @@ class FeeStructure(models.Model):
         choices=LEVEL_CHOICES,
         unique=True
     )
+
     tuition_per_term = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
+        help_text="Amount in KES"
     )
+
     meals_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
+        help_text="Amount in KES"
     )
+
     transport_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
+        help_text="Amount in KES"
     )
+
     total_fee = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        help_text="Enter amount in KES"
+        help_text="Amount in KES"
     )
-    fee_structure_file = models.URLField(
+
+    # Cloudinary RAW file (PDF, DOCX)
+    fee_structure_file = CloudinaryField(
+        "fee_structure",
+        resource_type="raw",
         blank=True,
         null=True,
-        help_text="Cloudinary PDF URL"
+        help_text="Upload PDF fee structure"
     )
+
+    class Meta:
+        ordering = ["level"]
 
     def __str__(self):
         return self.level

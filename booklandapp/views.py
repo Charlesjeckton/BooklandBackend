@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import date
+from cloudinary.utils import cloudinary_url
 
 from .models import (
     AdmissionMessage,
@@ -30,7 +31,7 @@ from .serializers import (
 
 
 # =====================================================
-# HEALTH CHECK / HOME
+# General / Health Check
 # =====================================================
 @api_view(["GET"])
 def api_home(request):
@@ -42,9 +43,8 @@ def api_home(request):
 
 
 # =====================================================
-# READ-ONLY ENDPOINTS
+# Read-only APIs
 # =====================================================
-
 @api_view(["GET"])
 def api_testimonials(request):
     queryset = TestimonialsMessage.objects.all()
@@ -68,31 +68,40 @@ def api_gallery(request):
 
 @api_view(["GET"])
 def api_fees(request):
-    """
-    Return all fee structures.
-    'file' field returns public Cloudinary PDF URL.
-    """
     queryset = FeeStructure.objects.all()
-    serializer = FeeStructureSerializer(queryset, many=True)
-    return Response(serializer.data)
+    data = []
+    for fee in queryset:
+        file_url = None
+        if fee.fee_structure_file:
+            # Generate signed URL for private download
+            file_url, _ = cloudinary_url(
+                fee.fee_structure_file.public_id,
+                resource_type='raw',
+                type='authenticated',  # private download
+                sign_url=True,
+                expires=3600  # 1 hour validity
+            )
+        data.append({
+            "id": fee.id,
+            "level": fee.level,
+            "tuition_per_term": float(fee.tuition_per_term),
+            "meals_fee": float(fee.meals_fee),
+            "transport_fee": float(fee.transport_fee),
+            "total_fee": float(fee.total_fee),
+            "file": file_url
+        })
+    return Response(data)
 
 
 @api_view(["GET"])
 def api_events(request):
-    """
-    Optional query params:
-      - month: filter by month number (1-12)
-      - category: filter by event category
-    """
     queryset = Event.objects.all()
     month = request.GET.get("month")
     category = request.GET.get("category")
-
     if month:
         queryset = queryset.filter(month=month)
     if category:
-        queryset = queryset.filter(category__iexact=category)
-
+        queryset = queryset.filter(category=category)
     queryset = queryset.order_by("-year", "month", "day")
     serializer = EventSerializer(queryset, many=True)
     return Response(serializer.data)
@@ -114,24 +123,20 @@ def api_alumni(request):
 
 @api_view(["GET"])
 def api_admission_deadlines(request):
-    queryset = KeyAdmissionDeadline.objects.all().order_by("deadline_date")
+    queryset = KeyAdmissionDeadline.objects.all().order_by('deadline_date')
     serializer = KeyAdmissionDeadlineSerializer(queryset, many=True)
     return Response(serializer.data)
 
 
 # =====================================================
-# WRITE / FORM SUBMISSION ENDPOINTS
+# Write APIs
 # =====================================================
-
 @api_view(["POST"])
 def api_admissions(request):
     serializer = AdmissionMessageSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(
-            {"success": "Admission request submitted successfully."},
-            status=status.HTTP_201_CREATED
-        )
+        return Response({"success": "Admission request submitted successfully."}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -140,8 +145,5 @@ def api_contact(request):
     serializer = EnquiryMessagesSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(
-            {"success": "Your message has been sent successfully."},
-            status=status.HTTP_201_CREATED
-        )
+        return Response({"success": "Your message has been sent successfully."}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

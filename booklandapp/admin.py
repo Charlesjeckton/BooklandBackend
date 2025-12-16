@@ -104,7 +104,7 @@ class FeaturedEventAdmin(admin.ModelAdmin):
 
 
 # =====================================================
-# Fee Structure Admin (with PDF upload & download)
+# Fee Structure Admin (with PDF upload)
 # =====================================================
 @admin.register(FeeStructure)
 class FeeStructureAdmin(admin.ModelAdmin):
@@ -114,7 +114,7 @@ class FeeStructureAdmin(admin.ModelAdmin):
 
     def file_link(self, obj):
         if obj.fee_structure_file:
-            return format_html('<a href="{}" target="_blank">Download PDF</a>', obj.fee_structure_file)
+            return format_html('<a href="{}" target="_blank">View PDF</a>', obj.fee_structure_file)
         return "No PDF"
 
     file_link.short_description = "Fee Structure PDF"

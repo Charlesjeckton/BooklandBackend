@@ -11,6 +11,7 @@ from .models import (
     FeeStructure,
 )
 
+
 # =========================
 # Admission Form
 # =========================
@@ -121,6 +122,7 @@ class GalleryImageForm(forms.ModelForm):
         instance = super().save(commit=False)
         image_file = self.cleaned_data.get("upload_image")
         if image_file:
+            # Upload to Cloudinary
             upload_result = cloudinary.uploader.upload(
                 image_file,
                 folder="bookland/gallery",
@@ -147,6 +149,7 @@ class FeaturedEventForm(forms.ModelForm):
         instance = super().save(commit=False)
         image_file = self.cleaned_data.get("upload_image")
         if image_file:
+            # Upload to Cloudinary
             upload_result = cloudinary.uploader.upload(
                 image_file,
                 folder="bookland/featured_events",
@@ -160,7 +163,7 @@ class FeaturedEventForm(forms.ModelForm):
 
 
 # =========================
-# Fee Structure Form (PDFs)
+# Fee Structure Form
 # =========================
 class FeeStructureForm(forms.ModelForm):
     upload_file = forms.FileField(required=False, label="Upload PDF")
@@ -173,19 +176,18 @@ class FeeStructureForm(forms.ModelForm):
             "meals_fee",
             "transport_fee",
             "total_fee",
-            "upload_file",
+            "upload_file"
         ]
 
     def save(self, commit=True):
         instance = super().save(commit=False)
         file_obj = self.cleaned_data.get("upload_file")
         if file_obj:
-            # Upload PDF to Cloudinary as raw file
+            # Upload PDF to Cloudinary
             upload_result = cloudinary.uploader.upload(
                 file_obj,
                 folder="bookland/fee_structures",
-                resource_type="raw",  # Ensures PDFs are downloadable
-                access_mode="public",  # Users can download directly
+                resource_type="raw"  # Important for PDFs
             )
             instance.fee_structure_file = upload_result["secure_url"]
         if commit:

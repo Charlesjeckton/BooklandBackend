@@ -47,7 +47,6 @@ if not DEBUG:
 # APPLICATIONS
 # =====================================================
 INSTALLED_APPS = [
-    # Django core
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -55,13 +54,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    # Third-party
-    "cloudinary_storage",  # Must be before cloudinary
+    "cloudinary_storage",
     "cloudinary",
     "corsheaders",
     "rest_framework",
 
-    # Local apps
     "booklandapp",
 ]
 
@@ -69,7 +66,7 @@ INSTALLED_APPS = [
 # MIDDLEWARE
 # =====================================================
 MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",  # Must be first
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -92,7 +89,7 @@ WSGI_APPLICATION = "BooklandSchools.wsgi.application"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],  # Add global templates if used
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -139,11 +136,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 PASSWORD_HASHERS = [
-    'django.contrib.auth.hashers.Argon2PasswordHasher',
-    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
-    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
-    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
-    'django.contrib.auth.hashers.BCryptPasswordHasher',
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.BCryptPasswordHasher",
 ]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -164,9 +161,6 @@ CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
 
 if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
     import cloudinary
-    import cloudinary.uploader
-    import cloudinary.api
-
     cloudinary.config(
         cloud_name=CLOUDINARY_CLOUD_NAME,
         api_key=CLOUDINARY_API_KEY,
@@ -175,10 +169,10 @@ if CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET:
     )
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
 # =====================================================
 # CORS / CSRF
@@ -187,6 +181,7 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "https://bookland-frontend-two.vercel.app",
 ]
+
 if DEBUG:
     CORS_ALLOWED_ORIGINS.extend([
         "http://localhost:3000",
@@ -206,6 +201,7 @@ CSRF_TRUSTED_ORIGINS = [
     "https://booklandbackend.onrender.com",
     "https://bookland-frontend-two.vercel.app",
 ]
+
 if DEBUG:
     CSRF_TRUSTED_ORIGINS.extend([
         "http://localhost:8000",
@@ -227,43 +223,66 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "1000/hour", "user": "5000/hour"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "1000/hour",
+        "user": "5000/hour",
+    },
 }
+
 if DEBUG:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append("rest_framework.renderers.BrowsableAPIRenderer")
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"].append(
+        "rest_framework.renderers.BrowsableAPIRenderer"
+    )
 
 # =====================================================
 # LOGGING
 # =====================================================
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {'verbose': {'format': '{asctime} {levelname} {module} {message}','style': '{'}},
-    'handlers': {'console': {'class': 'logging.StreamHandler','formatter': 'verbose'}},
-    'root': {'handlers': ['console'],'level': 'WARNING'},
-    'loggers': {
-        'django': {'handlers': ['console'],'level': 'INFO','propagate': False},
-        'booklandapp': {'handlers': ['console'],'level': 'INFO','propagate': False},
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {"format": "{asctime} {levelname} {module} {message}", "style": "{"}
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "verbose"}
+    },
+    "root": {"handlers": ["console"], "level": "WARNING"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "booklandapp": {"handlers": ["console"], "level": "INFO", "propagate": False},
     },
 }
 
 # =====================================================
-# ADDITIONAL SETTINGS
+# SESSION / SECURITY (ADMIN AUTO LOGOUT)
 # =====================================================
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
+SESSION_COOKIE_AGE = 60 * 5        # 5 minutes inactivity
+SESSION_SAVE_EVERY_REQUEST = True  # reset timer on each request
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-SESSION_COOKIE_AGE = 1209600
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = "Lax"
 
+# =====================================================
+# UPLOAD LIMITS
+# =====================================================
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
 
 # =====================================================
+# EMAIL
+# =====================================================
+EMAIL_BACKEND = (
+    "django.core.mail.backends.console.EmailBackend"
+    if DEBUG
+    else "django.core.mail.backends.smtp.EmailBackend"
+)
+
+# =====================================================
 # RENDER SPECIFIC
 # =====================================================
-RENDER_HEALTH_CHECK_URL = '/health/'
-if 'RENDER' in os.environ:
-    MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
+RENDER_HEALTH_CHECK_URL = "/health/"
+if "RENDER" in os.environ:
+    MIDDLEWARE.insert(2, "whitenoise.middleware.WhiteNoiseMiddleware")
